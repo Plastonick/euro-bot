@@ -1,0 +1,19 @@
+{
+  "name": "plastonick/euros-bot",
+  "type": "project",
+  "authors": [
+    {
+      "name": "David Pugh",
+      "email": "plastonick@gmail.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.3",
+    "vlucas/phpdotenv": "^5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "Plastonick\\Euros\\": "src"
+    }
+  }
+}
