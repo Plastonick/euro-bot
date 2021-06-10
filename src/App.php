@@ -75,5 +75,5 @@ while (true) {
 
     $updateFrequency = $_ENV['UPDATE_FREQUENCY'] ?? 120;
 
-    sleep(120);
+    sleep($updateFrequency);
 }
