@@ -14,7 +14,7 @@ $competitionId = $_ENV['COMPETITION_ID'];
 
 $apiClient = new \GuzzleHttp\Client(
     [
-        'base_uri' => 'https://api.football-data.org/v2/',
+        'base_uri' => $_ENV['FOOTBALL_API_URI'],
         'timeout' => 0,
         'allow_redirects' => false,
         'headers' => ['X-Auth-Token' => $_ENV['API_KEY']],
@@ -66,12 +66,12 @@ $state = $stateBuilder->buildNewState($teams);
 $slacker = new Slacker();
 $loop = new Loop($state, $stateBuilder, $slacker);
 
-//while (true) {
-//    try {
-//        $loop->run();
-//    } catch (Exception $e) {
-//        error_log($e->getMessage());
-//    }
-//
-//    sleep(120);
-//}
+while (true) {
+    try {
+        $loop->run();
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    sleep(120);
+}

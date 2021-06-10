@@ -70,9 +70,9 @@ class Slacker
         }
 
         $message = sprintf(
-            "%s :flag-%s: %d:%d :flag-%s: %s! %s",
+            "%s :flag-%s: %d : %d :flag-%s: %s! %s",
             $match->homeTeam->name,
-            $match->homeTeam->buildSlackName(),
+            $match->homeTeam->flagCode,
             $match->homeScore,
             $match->awayScore,
             $match->awayTeam->flagCode,
