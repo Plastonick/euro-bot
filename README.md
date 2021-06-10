@@ -1,3 +1,20 @@
-Bot to announce sweepstakes changes!
+#Euro Slack Bot
 
-Run by executing `src/App.php`
+Slack Bot to announce football events and tag the relevant team "owners"!
+
+This bot is useful for keeping people involved in Euros sweepstakes, each country is given a slack username or simply a name. Slack tags are detected by checking for all lowercase names.
+
+This bot then posts to slack at the start or end of a match, tagging the relevant people involved in the match as well as the result of that match.
+
+## Usage
+
+### Native
+
+Run by executing `src/App.php`.
+
+### Docker
+
+docker run -d --rm \
+    --name <name> \
+    -v /path/to/.env:/app/.env \
+    davidpugh/euro-bot:latest
