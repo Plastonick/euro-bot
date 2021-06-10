@@ -12,19 +12,20 @@ This bot then posts to slack at the start or end of a match, tagging the relevan
 
 ## Usage
 
-Copy the .env.example to .env and input the relevant values for your use case. 
-
 You'll need to generate an api token at football-data.org, and an incoming webhook for your Slack workspace/channel.
 
 ### Native
 
-Run by executing `src/App.php`.
+Clone this repository, copy the `.env.example` to `.env` and input the relevant values for your use case. 
+
+Run by executing `src/App.php`, the process will continue indefinitely.
 
 ### Docker
 
+Generate your `.env` file from the `.env.example` in this repository, then run it using the command below, inserting the path to your `.env` file (if you're in the same directory, you can use `` `pwd`/.env``)
+
 ```
 docker run -d --rm \
-    --name <name> \
     -v <path_to>/.env:/app/.env \
     davidpugh/euro-bot:latest
 ```
