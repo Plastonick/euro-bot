@@ -1,16 +1,77 @@
 <?php
 
+use Plastonick\Euros\Loop;
+use Plastonick\Euros\Slacker;
+use Plastonick\Euros\StateBuilder;
+use Plastonick\Euros\Team;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
-$competitionId = 2018;
+$competitionId = $_ENV['COMPETITION_ID'];
 
-$client = new \GuzzleHttp\Client([
-    'base_uri'        => 'https://api.football-data.org/v2/',
-    'timeout'         => 0,
-    'allow_redirects' => false,
-]);
+$apiClient = new \GuzzleHttp\Client(
+    [
+        'base_uri' => 'https://api.football-data.org/v2/',
+        'timeout' => 0,
+        'allow_redirects' => false,
+        'headers' => ['X-Auth-Token' => $_ENV['API_KEY']],
+    ]
+);
 
-$matches = $client->get("competions/{$competitionId}/matches");
+$countryCodeMap = [
+    'GER' => 'de',
+    'ESP' => 'es',
+    'POR' => 'pt',
+    'SVK' => 'sk',
+    'ENG' => 'en',
+    'FRA' => 'fr',
+    'DEN' => 'dk',
+    'ITA' => 'it',
+    'SUI' => 'ch',
+    'UKR' => 'ua',
+    'SWE' => 'se',
+    'POL' => 'pl',
+    'CZE' => 'cz',
+    'CRO' => 'hr',
+    'TUR' => 'tr',
+    'BEL' => 'be',
+    'RUS' => 'ru',
+    'AUT' => 'at',
+    'HUN' => 'hu',
+    'WAL' => 'wales',
+    'FIN' => 'fi',
+    'MKD' => 'mk',
+    'NED' => 'nl',
+    'SCO' => 'scotland',
+];
+
+$teamsJson = $apiClient->get("competitions/{$competitionId}/teams");
+$teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
+
+$teams = [];
+foreach ($teamsArray as $teamData) {
+    $tla = $teamData['tla'];
+
+    $id = $teamData['id'];
+    $team = new Team($id, $teamData['name'], $countryCodeMap[$tla], $_ENV["TEAM_{$tla}"] ?? null);
+    $teams[$id] = $team;
+}
+
+$stateBuilder = new StateBuilder($apiClient);
+$state = $stateBuilder->buildNewState($teams);
+
+$slacker = new Slacker();
+$loop = new Loop($state, $stateBuilder, $slacker);
+
+//while (true) {
+//    try {
+//        $loop->run();
+//    } catch (Exception $e) {
+//        error_log($e->getMessage());
+//    }
+//
+//    sleep(120);
+//}
