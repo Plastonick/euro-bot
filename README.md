@@ -8,6 +8,8 @@ This bot then posts to slack at the start or end of a match, tagging the relevan
 
 ## Usage
 
+Copy the .env.example to .env and input the relevant values for your use case. You'll need to generate an api token at football-data.org.
+
 ### Native
 
 Run by executing `src/App.php`.
@@ -16,5 +18,5 @@ Run by executing `src/App.php`.
 
 docker run -d --rm \
     --name <name> \
-    -v /path/to/.env:/app/.env \
+    -v <path_to>/.env:/app/.env \
     davidpugh/euro-bot:latest
