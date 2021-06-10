@@ -2,6 +2,8 @@
 
 namespace Plastonick\Euros;
 
+use function date;
+use const DATE_ATOM;
 use function error_log;
 
 class Loop
@@ -19,6 +21,8 @@ class Loop
 
     public function run()
     {
+        echo date(DATE_ATOM) . " - Updating match data\n";
+
         $updatedState = $this->stateBuilder->buildNewState($this->state->getTeams());
         $updatedMatches = $updatedState->getMatches();
 
@@ -34,6 +38,7 @@ class Loop
             // Determine if the match has started since our last status
             if ($originalMatch->status === 'SCHEDULED' && $updatedMatch->status !== 'SCHEDULED') {
                 $this->slacker->matchStarting($updatedMatch);
+                echo date(DATE_ATOM) . " - Generating match start event\n";
 
                 continue;
             }
@@ -41,6 +46,7 @@ class Loop
             // Determine if the match has finished
             if ($originalMatch->status !== 'FINISHED' && $updatedMatch->status === 'FINISHED') {
                 $this->slacker->matchComplete($updatedMatch);
+                echo date(DATE_ATOM) . " - Generating match completion event\n";
 
                 continue;
             }
