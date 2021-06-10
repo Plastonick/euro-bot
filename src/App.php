@@ -6,6 +6,7 @@ use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
 
 require __DIR__ . '/../vendor/autoload.php';
+set_time_limit(0);
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
