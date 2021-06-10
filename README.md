@@ -26,6 +26,6 @@ Generate your `.env` file from the `.env.example` in this repository, then run i
 
 ```
 docker run -d --rm \
-    -v <path_to>/.env:/app/.env \
+    -v <local/path/to/.env>:/app/.env \
     davidpugh/euro-bot:latest
 ```
