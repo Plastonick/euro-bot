@@ -12,7 +12,9 @@ This bot then posts to slack at the start or end of a match, tagging the relevan
 
 ## Usage
 
-Copy the .env.example to .env and input the relevant values for your use case. You'll need to generate an api token at football-data.org.
+Copy the .env.example to .env and input the relevant values for your use case. 
+
+You'll need to generate an api token at football-data.org, and an incoming webhook for your Slack workspace/channel.
 
 ### Native
 
