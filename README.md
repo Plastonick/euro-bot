@@ -1,4 +1,4 @@
-#Euro Slack Bot
+# Euro Slack Bot
 
 Slack Bot to announce football events and tag the relevant team "owners"!
 
@@ -16,7 +16,9 @@ Run by executing `src/App.php`.
 
 ### Docker
 
+```
 docker run -d --rm \
     --name <name> \
     -v <path_to>/.env:/app/.env \
     davidpugh/euro-bot:latest
+```
