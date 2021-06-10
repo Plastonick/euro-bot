@@ -73,5 +73,7 @@ while (true) {
         error_log($e->getMessage());
     }
 
+    $updateFrequency = $_ENV['UPDATE_FREQUENCY'] ?? 120;
+
     sleep(120);
 }
