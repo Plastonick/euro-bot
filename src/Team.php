@@ -31,4 +31,9 @@ class Team
 
         return $this->owner;
     }
+
+    public function getFlagEmoji(): string
+    {
+        return ":flag-{$this->flagCode}:";
+    }
 }

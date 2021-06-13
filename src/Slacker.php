@@ -20,7 +20,7 @@ class Slacker
         );
     }
 
-    public function matchStarting(Match $match)
+    public function matchStarting(Match $match): void
     {
         if ($match->homeTeam === null) {
             return;
@@ -43,7 +43,7 @@ class Slacker
         $this->sendMessage($message);
     }
 
-    public function matchComplete(Match $match)
+    public function matchComplete(Match $match): void
     {
         if ($match->winner === null) {
             return;
@@ -59,31 +59,45 @@ class Slacker
 
         switch ($match->winner) {
             case 'HOME_TEAM':
-                $comment = "Congratulations {$match->homeTeam->buildSlackName()} :tada:";
+                $comment = "Congratulations {$match->homeTeam->name} :good-job:";
                 break;
             case 'AWAY_TEAM':
-                $comment = "Congratulations {$match->awayTeam->buildSlackName()} :tada:";
+                $comment = "Congratulations {$match->awayTeam->name} :good-job:";
                 break;
             case 'DRAW':
             default:
                 $comment = "It's a draw! :steamed-hams:";
         }
 
-        $message = sprintf(
-            "%s :flag-%s: %d : %d :flag-%s: %s! %s",
-            $match->homeTeam->name,
-            $match->homeTeam->flagCode,
-            $match->homeScore,
-            $match->awayScore,
-            $match->awayTeam->flagCode,
-            $match->awayTeam->name,
-            $comment
-        );
+        $template = '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! {comment}';
+        $replacements = [
+            '{homeName}' => $match->homeTeam->name,
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeScore}' => (int) $match->homeScore,
+            '{awayScore}' => (int) $match->awayScore,
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayName}' => $match->awayTeam->name,
+            '{comment}' => $comment
+        ];
 
-        $this->sendMessage($message);
+        $this->sendMessage(strtr($template, $replacements));
     }
 
-    public function sendMessage(string $message)
+    public function goalScored(Team $scoringTeam, Match $match): void
+    {
+        $template = '{scoringTeam} score! :excellent: — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
+        $replacements = [
+            '{scoringTeam}' => $scoringTeam->name,
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeScore}' => (int) $match->homeScore,
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayScore}' => (int) $match->awayScore
+        ];
+
+        $this->sendMessage(strtr($template, $replacements));
+    }
+
+    private function sendMessage(string $message): void
     {
         $this->client->post('', ['json' => ['text' => $message]]);
     }

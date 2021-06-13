@@ -39,16 +39,23 @@ class Loop
             if ($originalMatch->status === 'SCHEDULED' && $updatedMatch->status !== 'SCHEDULED') {
                 $this->slacker->matchStarting($updatedMatch);
                 echo date(DATE_ATOM) . " - Generating match start event\n";
+            }
 
-                continue;
+            // Check for goals scored
+            if ($updatedMatch->homeScore > $originalMatch->homeScore) {
+                $this->slacker->goalScored($updatedMatch->homeTeam, $updatedMatch);
+                echo date(DATE_ATOM) . " - Generating home team goal scored event\n";
+            }
+
+            if ($updatedMatch->awayScore > $originalMatch->awayScore) {
+                $this->slacker->goalScored($updatedMatch->awayTeam, $updatedMatch);
+                echo date(DATE_ATOM) . " - Generating away team goal scored event\n";
             }
 
             // Determine if the match has finished
             if ($originalMatch->status !== 'FINISHED' && $updatedMatch->status === 'FINISHED') {
                 $this->slacker->matchComplete($updatedMatch);
                 echo date(DATE_ATOM) . " - Generating match completion event\n";
-
-                continue;
             }
         }
 
