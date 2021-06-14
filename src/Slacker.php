@@ -3,11 +3,12 @@
 namespace Plastonick\Euros;
 
 use GuzzleHttp\Client;
-use function sprintf;
+use function strtr;
 
 class Slacker
 {
     private Client $client;
+    private Emoji $emoji;
 
     public function __construct()
     {
@@ -18,6 +19,7 @@ class Slacker
                 'allow_redirects' => false,
             ]
         );
+        $this->emoji = new Emoji();
     }
 
     public function matchStarting(Match $match): void
@@ -30,17 +32,18 @@ class Slacker
             return;
         }
 
-        $message = sprintf(
-            "%s (%s) :flag-%s: vs. :flag-%s: %s (%s) has kicked off! :tada:",
-            $match->homeTeam->name,
-            $match->homeTeam->buildSlackName(),
-            $match->homeTeam->flagCode,
-            $match->awayTeam->flagCode,
-            $match->awayTeam->name,
-            $match->awayTeam->buildSlackName(),
-        );
+        $template = '{homeName} {homeOwner} {homeFlag} vs. {awayFlag} {awayName} {awayOwner} has kicked off! {kickOffEmoji}';
+        $replacements = [
+            '{homeName}' => $match->homeTeam->name,
+            '{homeOwner}' => $match->homeTeam->buildSlackName(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayName}' => $match->awayTeam->name,
+            '{awayOwner}' => $match->awayTeam->buildSlackName(),
+            '{kickOffEmoji}' => $this->emoji->getKickOffEmoji()
+        ];
 
-        $this->sendMessage($message);
+        $this->sendMessage(strtr($template, $replacements));
     }
 
     public function matchComplete(Match $match): void
@@ -59,14 +62,14 @@ class Slacker
 
         switch ($match->winner) {
             case 'HOME_TEAM':
-                $comment = "Congratulations {$match->homeTeam->name} :good-job:";
+                $comment = "Congratulations {$match->homeTeam->name} {$this->emoji->getWinEmoji()}";
                 break;
             case 'AWAY_TEAM':
-                $comment = "Congratulations {$match->awayTeam->name} :good-job:";
+                $comment = "Congratulations {$match->awayTeam->name} {$this->emoji->getWinEmoji()}";
                 break;
             case 'DRAW':
             default:
-                $comment = "It's a draw! :steamed-hams:";
+                $comment = "It's a draw! {$this->emoji->getDrawEmoji()}";
         }
 
         $template = '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! {comment}';
@@ -85,13 +88,14 @@ class Slacker
 
     public function goalScored(Team $scoringTeam, Match $match): void
     {
-        $template = '{scoringTeam} score! :excellent: — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
+        $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
             '{scoringTeam}' => $scoringTeam->name,
             '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
             '{homeScore}' => (int) $match->homeScore,
             '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
-            '{awayScore}' => (int) $match->awayScore
+            '{awayScore}' => (int) $match->awayScore,
+            '{scoreEmoji}' => $this->emoji->getScoreEmoji()
         ];
 
         $this->sendMessage(strtr($template, $replacements));
