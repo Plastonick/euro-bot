@@ -8,25 +8,23 @@ use function error_log;
 
 class Loop
 {
-    private State $state;
     private StateBuilder $stateBuilder;
     private Messager $messager;
 
-    public function __construct(State $state, StateBuilder $stateBuilder, Messager $messager)
+    public function __construct(StateBuilder $stateBuilder, Messager $messager)
     {
         $this->messager = $messager;
-        $this->state = $state;
         $this->stateBuilder = $stateBuilder;
     }
 
-    public function run()
+    public function run(State $state): State
     {
         echo date(DATE_ATOM) . " - Updating match data\n";
 
-        $updatedState = $this->stateBuilder->buildNewState($this->state->getTeams());
+        $updatedState = $this->stateBuilder->buildNewState($state->getTeams());
         $updatedMatches = $updatedState->getMatches();
 
-        foreach ($this->state->getMatches() as $matchId => $originalMatch) {
+        foreach ($state->getMatches() as $matchId => $originalMatch) {
             if (!isset($updatedMatches[$matchId])) {
                 error_log("Cannot find updated match for id {$matchId}");
 
@@ -66,6 +64,6 @@ class Loop
             }
         }
 
-        $this->state = $updatedState;
+        return $updatedState;
     }
 }

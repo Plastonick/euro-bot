@@ -2,6 +2,7 @@
 
 namespace Plastonick\Euros;
 
+use DateTime;
 use GuzzleHttp\Client;
 use function json_decode;
 
@@ -14,7 +15,7 @@ class StateBuilder
         $this->footballApi = $footballApi;
     }
 
-    public function buildNewState(array $teams)
+    public function buildNewState(array $teams): State
     {
         $matchesJson = $this->footballApi->get("competitions/{$_ENV['COMPETITION_ID']}/matches");
 
@@ -26,8 +27,11 @@ class StateBuilder
             $awayTeamId = $matchData['awayTeam']['id'];
             $matchId = $matchData['id'];
 
+            $startTime = new DateTime($matchData['utcDate']);
+
             $matches[$matchId] = new Match(
                 $matchData['status'],
+                $startTime,
                 $teams[$homeTeamId] ?? null,
                 $teams[$awayTeamId] ?? null,
                 $matchData['score']['fullTime']['homeTeam'],

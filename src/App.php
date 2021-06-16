@@ -67,16 +67,14 @@ $state = $stateBuilder->buildNewState($teams);
 
 $slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK']);
 $messager = new Messager($slackWebhookService);
-$loop = new Loop($state, $stateBuilder, $messager);
+$loop = new Loop($stateBuilder, $messager);
 
 while (true) {
     try {
-        $loop->run();
+        $state = $loop->run($state);
     } catch (Exception $e) {
         error_log($e->getMessage());
     }
 
-    $updateFrequency = $_ENV['UPDATE_FREQUENCY'] ?? 120;
-
-    sleep($updateFrequency);
+    sleep($state->getSleepLength());
 }
