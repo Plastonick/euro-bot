@@ -94,4 +94,18 @@ class Messager
 
         $this->notificationService->send(strtr($template, $replacements));
     }
+
+    public function goalDisallowed(Match $match): void
+    {
+        $template = 'NO GOAL! {homeFlag} {homeScore} : {awayScore} {awayFlag}';
+        $replacements = [
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeScore}' => (int) $match->homeScore,
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayScore}' => (int) $match->awayScore,
+            '{scoreEmoji}' => $this->emoji->getScoreEmoji()
+        ];
+
+        $this->notificationService->send(strtr($template, $replacements));
+    }
 }

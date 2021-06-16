@@ -47,6 +47,13 @@ class Loop
                 echo date(DATE_ATOM) . " - Generating home team goal scored event\n";
             }
 
+            if ($updatedMatch->homeScore < $originalMatch->homeScore
+                || $updatedMatch->awayScore < $originalMatch->awayScore
+            ) {
+                $this->messager->goalDisallowed($updatedMatch);
+                echo date(DATE_ATOM) . " - Generating goal disallowed event\n";
+            }
+
             if ($updatedMatch->awayScore > $originalMatch->awayScore) {
                 $this->messager->goalScored($updatedMatch->awayTeam, $updatedMatch);
                 echo date(DATE_ATOM) . " - Generating away team goal scored event\n";
