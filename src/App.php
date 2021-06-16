@@ -1,9 +1,10 @@
 <?php
 
 use Plastonick\Euros\Loop;
-use Plastonick\Euros\Slacker;
+use Plastonick\Euros\Messager;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
+use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
 require __DIR__ . '/../vendor/autoload.php';
 set_time_limit(0);
@@ -64,8 +65,9 @@ foreach ($teamsArray as $teamData) {
 $stateBuilder = new StateBuilder($apiClient);
 $state = $stateBuilder->buildNewState($teams);
 
-$slacker = new Slacker();
-$loop = new Loop($state, $stateBuilder, $slacker);
+$slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK']);
+$messager = new Messager($slackWebhookService);
+$loop = new Loop($state, $stateBuilder, $messager);
 
 while (true) {
     try {

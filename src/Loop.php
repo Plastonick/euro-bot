@@ -10,11 +10,11 @@ class Loop
 {
     private State $state;
     private StateBuilder $stateBuilder;
-    private Slacker $slacker;
+    private Messager $messager;
 
-    public function __construct(State $state, StateBuilder $stateBuilder, Slacker $slacker)
+    public function __construct(State $state, StateBuilder $stateBuilder, Messager $messager)
     {
-        $this->slacker = $slacker;
+        $this->messager = $messager;
         $this->state = $state;
         $this->stateBuilder = $stateBuilder;
     }
@@ -37,24 +37,24 @@ class Loop
 
             // Determine if the match has started since our last status
             if ($originalMatch->status === 'SCHEDULED' && $updatedMatch->status !== 'SCHEDULED') {
-                $this->slacker->matchStarting($updatedMatch);
+                $this->messager->matchStarting($updatedMatch);
                 echo date(DATE_ATOM) . " - Generating match start event\n";
             }
 
             // Check for goals scored
             if ($updatedMatch->homeScore > $originalMatch->homeScore) {
-                $this->slacker->goalScored($updatedMatch->homeTeam, $updatedMatch);
+                $this->messager->goalScored($updatedMatch->homeTeam, $updatedMatch);
                 echo date(DATE_ATOM) . " - Generating home team goal scored event\n";
             }
 
             if ($updatedMatch->awayScore > $originalMatch->awayScore) {
-                $this->slacker->goalScored($updatedMatch->awayTeam, $updatedMatch);
+                $this->messager->goalScored($updatedMatch->awayTeam, $updatedMatch);
                 echo date(DATE_ATOM) . " - Generating away team goal scored event\n";
             }
 
             // Determine if the match has finished
             if ($originalMatch->status !== 'FINISHED' && $updatedMatch->status === 'FINISHED') {
-                $this->slacker->matchComplete($updatedMatch);
+                $this->messager->matchComplete($updatedMatch);
                 echo date(DATE_ATOM) . " - Generating match completion event\n";
             }
         }

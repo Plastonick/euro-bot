@@ -2,24 +2,18 @@
 
 namespace Plastonick\Euros;
 
-use GuzzleHttp\Client;
+use Plastonick\Euros\Transport\NotificationService;
 use function strtr;
 
-class Slacker
+class Messager
 {
-    private Client $client;
     private Emoji $emoji;
+    private NotificationService $notificationService;
 
-    public function __construct()
+    public function __construct(NotificationService $notificationService)
     {
-        $this->client = new Client(
-            [
-                'base_uri' => $_ENV['SLACK_WEB_HOOK'],
-                'timeout' => 0,
-                'allow_redirects' => false,
-            ]
-        );
         $this->emoji = new Emoji();
+        $this->notificationService = $notificationService;
     }
 
     public function matchStarting(Match $match): void
@@ -43,7 +37,7 @@ class Slacker
             '{kickOffEmoji}' => $this->emoji->getKickOffEmoji()
         ];
 
-        $this->sendMessage(strtr($template, $replacements));
+        $this->notificationService->send(strtr($template, $replacements));
     }
 
     public function matchComplete(Match $match): void
@@ -83,7 +77,7 @@ class Slacker
             '{comment}' => $comment
         ];
 
-        $this->sendMessage(strtr($template, $replacements));
+        $this->notificationService->send(strtr($template, $replacements));
     }
 
     public function goalScored(Team $scoringTeam, Match $match): void
@@ -98,11 +92,6 @@ class Slacker
             '{scoreEmoji}' => $this->emoji->getScoreEmoji()
         ];
 
-        $this->sendMessage(strtr($template, $replacements));
-    }
-
-    private function sendMessage(string $message): void
-    {
-        $this->client->post('', ['json' => ['text' => $message]]);
+        $this->notificationService->send(strtr($template, $replacements));
     }
 }
