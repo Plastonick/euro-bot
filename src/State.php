@@ -41,8 +41,8 @@ class State
 
     public function getSleepLength(): int
     {
-        $normalDelay = (int) $_ENV['UPDATE_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 600;
-        $burstDelay = (int) $_ENV['BURST_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 10;
+        $normalDelay = (int) ($_ENV['UPDATE_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 600);
+        $burstDelay = (int) ($_ENV['BURST_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 10);
 
         if ($this->hasMatchInProgress() || $this->isCloseToStartOfMatch($normalDelay)) {
             echo date(DATE_ATOM) . " - Using burst delay: {$burstDelay}s\n";
