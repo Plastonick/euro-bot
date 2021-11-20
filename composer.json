@@ -16,5 +16,8 @@
     "psr-4": {
       "Plastonick\\Euros\\": "src"
     }
+  },
+  "require-dev": {
+    "vimeo/psalm": "^4.12"
   }
 }
