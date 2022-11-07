@@ -8,12 +8,10 @@ use function strtr;
 class Messager
 {
     private Emoji $emoji;
-    private NotificationService $notificationService;
 
-    public function __construct(NotificationService $notificationService)
+    public function __construct(private readonly NotificationService $notificationService)
     {
         $this->emoji = new Emoji();
-        $this->notificationService = $notificationService;
     }
 
     public function matchStarting(Game $match): void
