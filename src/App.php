@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Logger;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messager;
 use Plastonick\Euros\StateBuilder;
@@ -11,6 +12,8 @@ set_time_limit(0);
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
+$stdout = new Monolog\Handler\StreamHandler('php://stdout');
+$logger = new Logger('euros_app', [$stdout]);
 
 $competitionId = $_ENV['COMPETITION_ID'];
 
@@ -56,10 +59,20 @@ $teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
 $teams = [];
 foreach ($teamsArray as $teamData) {
     $tla = $teamData['tla'];
+    if (isset($countryCodeMap[$tla])) {
+        $flag = $countryCodeMap[$tla];
+    } else {
+        $logger->warning('Failed to retrieve flag name', ['tla' => $tla]);
+        $flag = 'sc';
+    }
 
     $id = $teamData['id'];
-    $team = new Team($id, $teamData['name'], $countryCodeMap[$tla], $_ENV["TEAM_{$tla}"] ?? null);
+    $name = $teamData['name'];
+    $owner = isset($_ENV["TEAM_{$tla}"]) ? (string) $_ENV["TEAM_{$tla}"] : null;
+    $team = new Team($id, $name, $flag, $owner);
     $teams[$id] = $team;
+
+    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag]);
 }
 
 $stateBuilder = new StateBuilder($apiClient);
@@ -67,7 +80,7 @@ $state = $stateBuilder->buildNewState($teams);
 
 $slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK']);
 $messager = new Messager($slackWebhookService);
-$loop = new Loop($stateBuilder, $messager);
+$loop = new Loop($stateBuilder, $messager, $logger);
 
 while (true) {
     try {
@@ -76,5 +89,5 @@ while (true) {
         error_log($e->getMessage());
     }
 
-    sleep($state->getSleepLength());
+    sleep(max(1, $state->getSleepLength()));
 }

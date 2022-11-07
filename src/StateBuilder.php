@@ -29,7 +29,7 @@ class StateBuilder
 
             $startTime = new DateTime($matchData['utcDate']);
 
-            $matches[$matchId] = new Match(
+            $matches[$matchId] = new Game(
                 $matchData['status'],
                 $startTime,
                 $teams[$homeTeamId] ?? null,

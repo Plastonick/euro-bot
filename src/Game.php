@@ -5,7 +5,7 @@ namespace Plastonick\Euros;
 use DateTimeInterface;
 use function in_array;
 
-class Match
+class Game
 {
     public string $status;
     public DateTimeInterface $startTime;

@@ -2,8 +2,6 @@
 
 namespace Plastonick\Euros;
 
-use function ctype_lower;
-
 class Team
 {
     public int $id;
@@ -21,7 +19,7 @@ class Team
 
     public function buildSlackName(): string
     {
-        if (ctype_lower($this->owner)) {
+        if ($this->owner) {
             return "<@{$this->owner}>";
         }
 

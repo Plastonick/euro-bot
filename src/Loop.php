@@ -2,31 +2,27 @@
 
 namespace Plastonick\Euros;
 
-use function date;
-use const DATE_ATOM;
-use function error_log;
+use Psr\Log\LoggerInterface;
 
 class Loop
 {
-    private StateBuilder $stateBuilder;
-    private Messager $messager;
-
-    public function __construct(StateBuilder $stateBuilder, Messager $messager)
-    {
-        $this->messager = $messager;
-        $this->stateBuilder = $stateBuilder;
+    public function __construct(
+        private StateBuilder $stateBuilder,
+        private Messager $messager,
+        private readonly LoggerInterface $logger
+    ) {
     }
 
     public function run(State $state): State
     {
-        echo date(DATE_ATOM) . " - Updating match data\n";
+        $this->logger->info('Updating match data');
 
         $updatedState = $this->stateBuilder->buildNewState($state->getTeams());
         $updatedMatches = $updatedState->getMatches();
 
         foreach ($state->getMatches() as $matchId => $originalMatch) {
             if (!isset($updatedMatches[$matchId])) {
-                error_log("Cannot find updated match for id {$matchId}");
+                $this->logger->error('Cannot find updated match', ['id' => $matchId]);
 
                 continue;
             }
@@ -36,31 +32,31 @@ class Loop
             // Determine if the match has started since our last status
             if ($originalMatch->status === 'SCHEDULED' && $updatedMatch->status !== 'SCHEDULED') {
                 $this->messager->matchStarting($updatedMatch);
-                echo date(DATE_ATOM) . " - Generating match start event\n";
+                $this->logger->debug('Generating match start event');
             }
 
             // Check for goals scored
             if ($updatedMatch->homeScore > $originalMatch->homeScore) {
                 $this->messager->goalScored($updatedMatch->homeTeam, $updatedMatch);
-                echo date(DATE_ATOM) . " - Generating home team goal scored event\n";
+                $this->logger->debug('Generating home team goal scored event');
             }
 
             if ($updatedMatch->homeScore < $originalMatch->homeScore
                 || $updatedMatch->awayScore < $originalMatch->awayScore
             ) {
                 $this->messager->goalDisallowed($updatedMatch);
-                echo date(DATE_ATOM) . " - Generating goal disallowed event\n";
+                $this->logger->debug('Generating goal disallowed event');
             }
 
             if ($updatedMatch->awayScore > $originalMatch->awayScore) {
                 $this->messager->goalScored($updatedMatch->awayTeam, $updatedMatch);
-                echo date(DATE_ATOM) . " - Generating away team goal scored event\n";
+                $this->logger->debug('Generating away team goal scored event');
             }
 
             // Determine if the match has finished
             if ($originalMatch->status !== 'FINISHED' && $updatedMatch->status === 'FINISHED') {
                 $this->messager->matchComplete($updatedMatch);
-                echo date(DATE_ATOM) . " - Generating match completion event\n";
+                $this->logger->debug('Generating match completion event');
             }
         }
 

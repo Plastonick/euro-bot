@@ -13,7 +13,7 @@ class State
     private array $teams;
 
     /**
-     * @var Match[]
+     * @var Game[]
      */
     private array $matches;
 
@@ -32,7 +32,7 @@ class State
     }
 
     /**
-     * @return Match[]
+     * @return Game[]
      */
     public function getMatches(): array
     {

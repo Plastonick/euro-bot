@@ -16,7 +16,7 @@ class Messager
         $this->notificationService = $notificationService;
     }
 
-    public function matchStarting(Match $match): void
+    public function matchStarting(Game $match): void
     {
         if ($match->homeTeam === null) {
             return;
@@ -40,7 +40,7 @@ class Messager
         $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function matchComplete(Match $match): void
+    public function matchComplete(Game $match): void
     {
         if ($match->winner === null) {
             return;
@@ -80,7 +80,7 @@ class Messager
         $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function goalScored(Team $scoringTeam, Match $match): void
+    public function goalScored(Team $scoringTeam, Game $match): void
     {
         $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
@@ -95,7 +95,7 @@ class Messager
         $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function goalDisallowed(Match $match): void
+    public function goalDisallowed(Game $match): void
     {
         $template = 'NO GOAL! {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
