@@ -1,5 +1,6 @@
 <?php
 
+use GuzzleHttp\Client;
 use Monolog\Logger;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messager;
@@ -78,7 +79,17 @@ foreach ($teamsArray as $teamData) {
 $stateBuilder = new StateBuilder($apiClient);
 $state = $stateBuilder->buildNewState($teams);
 
-$slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK']);
+$webhookClient = new Client(
+    [
+        'timeout' => 3,
+        'allow_redirects' => false,
+        'headers' => [
+            'user-agent' => 'PlastonickFootballSweepstakes',
+        ],
+    ]
+);
+
+$slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK'], $webhookClient, $logger);
 $messager = new Messager($slackWebhookService);
 $loop = new Loop($stateBuilder, $messager, $logger);
 

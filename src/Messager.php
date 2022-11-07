@@ -54,17 +54,11 @@ class Messager
             return;
         }
 
-        switch ($match->winner) {
-            case 'HOME_TEAM':
-                $comment = "Congratulations {$match->homeTeam->name} {$this->emoji->getWinEmoji()}";
-                break;
-            case 'AWAY_TEAM':
-                $comment = "Congratulations {$match->awayTeam->name} {$this->emoji->getWinEmoji()}";
-                break;
-            case 'DRAW':
-            default:
-                $comment = "It's a draw! {$this->emoji->getDrawEmoji()}";
-        }
+        $comment = match ($match->winner) {
+            'HOME_TEAM' => "Congratulations {$match->homeTeam->name} {$this->emoji->getWinEmoji()}",
+            'AWAY_TEAM' => "Congratulations {$match->awayTeam->name} {$this->emoji->getWinEmoji()}",
+            default => "It's a draw! {$this->emoji->getDrawEmoji()}",
+        };
 
         $template = '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! {comment}';
         $replacements = [
