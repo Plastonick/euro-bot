@@ -22,7 +22,7 @@ class Loop
 
         foreach ($state->getMatches() as $matchId => $originalMatch) {
             if (!isset($updatedMatches[$matchId])) {
-                $this->logger->error('Cannot find updated match', ['id' => $matchId]);
+                $this->logger->debug('Cannot find updated match', ['id' => $matchId]);
 
                 continue;
             }

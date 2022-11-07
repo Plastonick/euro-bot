@@ -4,6 +4,7 @@ namespace Plastonick\Euros;
 
 use function array_rand;
 use function explode;
+use function is_string;
 
 class Emoji
 {
@@ -29,11 +30,12 @@ class Emoji
 
     private function retrieveRandomEmoji(string $key): ?string
     {
-        if (!isset($_ENV[$key]) || $_ENV[$key] === '') {
+        $emojiList = $_ENV[$key] ?? null;
+        if (!is_string($emojiList) || $emojiList === '') {
             return null;
         }
 
-        $emoji = explode(',', $_ENV[$key] ?? '');
+        $emoji = explode(',', $emojiList);
 
         $key = array_rand($emoji, 1);
 

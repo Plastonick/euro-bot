@@ -2,25 +2,19 @@
 
 namespace Plastonick\Euros;
 
-use function date;
-use const DATE_ATOM;
+use Psr\Log\LoggerInterface;
 
 class State
 {
     /**
-     * @var Team[]
+     * @param Team[] $teams
+     * @param Game[] $matches
      */
-    private array $teams;
-
-    /**
-     * @var Game[]
-     */
-    private array $matches;
-
-    public function __construct(array $teams, array $matches)
-    {
-        $this->teams = $teams;
-        $this->matches = $matches;
+    public function __construct(
+        private readonly array $teams,
+        private readonly array $matches,
+        private readonly LoggerInterface $logger
+    ) {
     }
 
     /**
@@ -44,12 +38,12 @@ class State
         $normalDelay = (int) ($_ENV['UPDATE_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 600);
         $burstDelay = (int) ($_ENV['BURST_DELAY'] ?? $_ENV['UPDATE_FREQUENCY'] ?? 10);
 
-        if ($this->hasMatchInProgress() || $this->isCloseToStartOfMatch($normalDelay)) {
-            echo date(DATE_ATOM) . " - Using burst delay: {$burstDelay}s\n";
+        if ($this->hasMatchInProgress() || $this->isCloseToStartOfMatch(max($normalDelay, $burstDelay))) {
+            $this->logger->debug("Using burst delay: {$burstDelay}s");
 
             return $burstDelay;
         } else {
-            echo date(DATE_ATOM) . " - Using normal delay: {$normalDelay}s\n";
+            $this->logger->debug("Using normal delay: {$normalDelay}s");
 
             return $normalDelay;
         }
@@ -66,7 +60,7 @@ class State
         return false;
     }
 
-    private function isCloseToStartOfMatch(int $thresholdSeconds = 600): bool
+    private function isCloseToStartOfMatch(int $thresholdSeconds): bool
     {
         $now = time();
 

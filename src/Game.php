@@ -7,30 +7,16 @@ use function in_array;
 
 class Game
 {
-    public string $status;
-    public DateTimeInterface $startTime;
-    public ?Team $homeTeam;
-    public ?Team $awayTeam;
-    public ?int $homeScore;
-    public ?int $awayScore;
-    public ?string $winner;
-
     public function __construct(
-        string $status,
-        DateTimeInterface $startTime,
-        ?Team $homeTeam,
-        ?Team $awayTeam,
-        ?int $homeScore,
-        ?int $awayScore,
-        ?string $winner
+        public readonly string $id,
+        public readonly string $status,
+        public readonly DateTimeInterface $startTime,
+        public readonly Team $homeTeam,
+        public readonly Team $awayTeam,
+        public readonly ?int $homeScore,
+        public readonly ?int $awayScore,
+        public readonly ?string $winner
     ) {
-        $this->status = $status;
-        $this->startTime = $startTime;
-        $this->homeTeam = $homeTeam;
-        $this->awayTeam = $awayTeam;
-        $this->homeScore = $homeScore;
-        $this->awayScore = $awayScore;
-        $this->winner = $winner;
     }
 
     public function inProgress(): bool

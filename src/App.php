@@ -76,7 +76,7 @@ foreach ($teamsArray as $teamData) {
     $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag]);
 }
 
-$stateBuilder = new StateBuilder($apiClient);
+$stateBuilder = new StateBuilder($apiClient, $logger);
 $state = $stateBuilder->buildNewState($teams);
 
 $webhookClient = new Client(

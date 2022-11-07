@@ -16,14 +16,6 @@ class Messager
 
     public function matchStarting(Game $match): void
     {
-        if ($match->homeTeam === null) {
-            return;
-        }
-
-        if ($match->awayTeam === null) {
-            return;
-        }
-
         $template = '{homeName} {homeOwner} {homeFlag} vs. {awayFlag} {awayName} {awayOwner} has kicked off! {kickOffEmoji}';
         $replacements = [
             '{homeName}' => $match->homeTeam->name,
@@ -41,14 +33,6 @@ class Messager
     public function matchComplete(Game $match): void
     {
         if ($match->winner === null) {
-            return;
-        }
-
-        if ($match->homeTeam === null) {
-            return;
-        }
-
-        if ($match->awayTeam === null) {
             return;
         }
 
@@ -77,9 +61,9 @@ class Messager
         $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
             '{scoringTeam}' => $scoringTeam->name,
-            '{homeFlag}' => $match->homeTeam?->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
             '{homeScore}' => (int) $match->homeScore,
-            '{awayFlag}' => $match->awayTeam?->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
             '{awayScore}' => (int) $match->awayScore,
             '{scoreEmoji}' => $this->emoji->getScoreEmoji()
         ];
