@@ -97,7 +97,7 @@ while (true) {
     try {
         $state = $loop->run($state);
     } catch (Exception $e) {
-        error_log($e->getMessage());
+        $logger->error($e->getMessage());
     }
 
     sleep(max(1, $state->getSleepLength()));
