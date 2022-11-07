@@ -85,9 +85,9 @@ class Messager
         $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
             '{scoringTeam}' => $scoringTeam->name,
-            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam?->getFlagEmoji(),
             '{homeScore}' => (int) $match->homeScore,
-            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam?->getFlagEmoji(),
             '{awayScore}' => (int) $match->awayScore,
             '{scoreEmoji}' => $this->emoji->getScoreEmoji()
         ];
