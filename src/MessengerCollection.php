@@ -2,7 +2,15 @@
 
 namespace Plastonick\Euros;
 
-class MessengerCollection implements Messenging
+use Generator;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Response;
+use function count;
+
+class MessengerCollection
 {
     /**
      * @var Messenger[]
@@ -25,29 +33,70 @@ class MessengerCollection implements Messenging
 
     public function matchStarting(Game $match): void
     {
+        $promises = [];
         foreach ($this->messengers as $messager) {
-            $messager->matchStarting($match);
+            $promises[] = $messager->matchStarting($match);
         }
+
+        $this->dispatchPromises($promises);
     }
 
     public function matchComplete(Game $match): void
     {
+        $promises = [];
         foreach ($this->messengers as $messager) {
-            $messager->matchComplete($match);
+            $promises[] = $messager->matchComplete($match);
         }
+
+        $this->dispatchPromises($promises);
     }
 
     public function goalScored(Team $scoringTeam, Game $match): void
     {
+        $promises = [];
         foreach ($this->messengers as $messager) {
-            $messager->goalScored($scoringTeam, $match);
+            $promises[] = $messager->goalScored($scoringTeam, $match);
         }
+
+        $this->dispatchPromises($promises);
     }
 
     public function goalDisallowed(Game $match): void
     {
+        $promises = [];
         foreach ($this->messengers as $messager) {
-            $messager->goalDisallowed($match);
+            $promises[] = $messager->goalDisallowed($match);
         }
+
+        $this->dispatchPromises($promises);
+    }
+
+    /**
+     * @param PromiseInterface[] $promises
+     *
+     * @return void
+     */
+    private function dispatchPromises(array $promises): void
+    {
+        $requests = function () use ($promises): Generator {
+            for ($i = 0; $i < count($promises); $i++) {
+                $promise = $promises[$i];
+                yield function() use ($promise): PromiseInterface {
+                    return $promise;
+                };
+            }
+        };
+
+        $pool = new Pool(new Client(), $requests(), [
+            'concurrency' => 10,
+            'fulfilled' => function (Response $response, int $index): void {
+                // this is delivered each successful response
+            },
+            'rejected' => function (RequestException $reason, int $index): void {
+                // this is delivered each failed request
+            },
+        ]);
+
+        $pool->promise()->wait();
     }
 }

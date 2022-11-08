@@ -2,10 +2,9 @@
 
 namespace Plastonick\Euros\Transport;
 
+use GuzzleHttp\Promise\PromiseInterface;
+
 interface NotificationService
 {
-    /**
-     * @param string $message
-     */
-    public function send(string $message): void;
+    public function send(string $message): PromiseInterface;
 }

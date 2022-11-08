@@ -2,6 +2,7 @@
 
 namespace Plastonick\Euros;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Plastonick\Euros\Transport\NotificationService;
 use function strtr;
 
@@ -13,7 +14,7 @@ class Messenger implements Messenging
     ) {
     }
 
-    public function matchStarting(Game $match): void
+    public function matchStarting(Game $match): PromiseInterface
     {
         $template = '{homeName} {homeOwner} {homeFlag} vs. {awayFlag} {awayName} {awayOwner} has kicked off! {kickOffEmoji}';
         $replacements = [
@@ -26,15 +27,11 @@ class Messenger implements Messenging
             '{kickOffEmoji}' => $this->config->getKickOffEmoji()
         ];
 
-        $this->notificationService->send(strtr($template, $replacements));
+        return $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function matchComplete(Game $match): void
+    public function matchComplete(Game $match): PromiseInterface
     {
-        if ($match->winner === null) {
-            return;
-        }
-
         $comment = match ($match->winner) {
             'HOME_TEAM' => "Congratulations {$match->homeTeam->name} {$this->config->getWinEmoji()}",
             'AWAY_TEAM' => "Congratulations {$match->awayTeam->name} {$this->config->getWinEmoji()}",
@@ -52,10 +49,10 @@ class Messenger implements Messenging
             '{comment}' => $comment
         ];
 
-        $this->notificationService->send(strtr($template, $replacements));
+        return $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function goalScored(Team $scoringTeam, Game $match): void
+    public function goalScored(Team $scoringTeam, Game $match): PromiseInterface
     {
         $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
@@ -67,10 +64,10 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        $this->notificationService->send(strtr($template, $replacements));
+        return $this->notificationService->send(strtr($template, $replacements));
     }
 
-    public function goalDisallowed(Game $match): void
+    public function goalDisallowed(Game $match): PromiseInterface
     {
         $template = 'NO GOAL! {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
@@ -81,7 +78,7 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        $this->notificationService->send(strtr($template, $replacements));
+        return $this->notificationService->send(strtr($template, $replacements));
     }
 
     private function buildName(?string $owner): string

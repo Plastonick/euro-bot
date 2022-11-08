@@ -3,7 +3,7 @@
 namespace Plastonick\Euros\Transport;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Log\LoggerInterface;
 
 class SlackIncomingWebhook implements NotificationService
@@ -18,12 +18,8 @@ class SlackIncomingWebhook implements NotificationService
     /**
      * @inheritDoc
      */
-    public function send(string $message): void
+    public function send(string $message): PromiseInterface
     {
-        try {
-            $this->client->post($this->webhookUrl, ['json' => ['text' => $message]]);
-        } catch (GuzzleException $e) {
-            $this->logger->error('Failed to send message', ['url' => $this->webhookUrl, 'error' => $e->getMessage()]);
-        }
+        return $this->client->postAsync($this->webhookUrl, ['json' => ['text' => $message]]);
     }
 }
