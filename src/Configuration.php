@@ -29,24 +29,14 @@ class Configuration
     }
 
     public function __construct(
-        private readonly string $webHookUrl,
-        private readonly Service $service,
+        public readonly string $webHookUrl,
+        public readonly Service $service,
         private readonly array $owners,
         private readonly Emoji $win,
         private readonly Emoji $score,
         private readonly Emoji $kickOff,
         private readonly Emoji $draw
     ) {
-    }
-
-    public function getWebHookUrl(): string
-    {
-        return $this->webHookUrl;
-    }
-
-    public function getService(): Service
-    {
-        return $this->service;
     }
 
     public function getTeamOwner(Team $team): ?string

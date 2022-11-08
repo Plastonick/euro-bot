@@ -92,7 +92,7 @@ $webhookClient = new Client(
 );
 
 $config = Configuration::fromEnv();
-$slackWebhookService = new SlackIncomingWebhook($config->getWebHookUrl(), $webhookClient, $logger);
+$slackWebhookService = new SlackIncomingWebhook($config->webHookUrl, $webhookClient, $logger);
 $messenger = new Messenger($slackWebhookService, $config);
 $messengerCollection = new MessengerCollection();
 $messengerCollection->register($messenger);

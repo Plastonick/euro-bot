@@ -19,7 +19,7 @@ class MessengerCollection
 
     public function register(Messenger $messager): self
     {
-        $this->messengers[$messager->config->getWebHookUrl()] = $messager;
+        $this->messengers[$messager->config->webHookUrl] = $messager;
 
         return $this;
     }
@@ -86,6 +86,7 @@ class MessengerCollection
                 };
             }
         };
+
 
         $pool = new Pool(new Client(), $requests(), [
             'concurrency' => 10,
