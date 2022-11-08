@@ -8,7 +8,7 @@ class Loop
 {
     public function __construct(
         private StateBuilder $stateBuilder,
-        private Messager $messager,
+        private MessengerCollection $messager,
         private readonly LoggerInterface $logger
     ) {
     }

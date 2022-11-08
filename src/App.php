@@ -2,19 +2,22 @@
 
 use GuzzleHttp\Client;
 use Monolog\Logger;
+use Plastonick\Euros\Configuration;
 use Plastonick\Euros\Loop;
-use Plastonick\Euros\Messager;
+use Plastonick\Euros\Messenger;
+use Plastonick\Euros\MessengerCollection;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
 require __DIR__ . '/../vendor/autoload.php';
+
 set_time_limit(0);
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
-$logger = new Logger('euros_app', [$stdout]);
+$logger = new Logger('sweepstake_app', [$stdout]);
 
 $competitionId = $_ENV['COMPETITION_ID'];
 
@@ -59,18 +62,17 @@ $teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
 
 $teams = [];
 foreach ($teamsArray as $teamData) {
-    $tla = $teamData['tla'];
-    if (isset($countryCodeMap[$tla])) {
-        $flag = $countryCodeMap[$tla];
+    $acronym = $teamData['tla'];
+    if (isset($countryCodeMap[$acronym])) {
+        $flag = $countryCodeMap[$acronym];
     } else {
-        $logger->warning('Failed to retrieve flag name', ['tla' => $tla]);
+        $logger->warning('Failed to retrieve flag name', ['acronym' => $acronym]);
         $flag = 'sc';
     }
 
     $id = $teamData['id'];
     $name = $teamData['name'];
-    $owner = isset($_ENV["TEAM_{$tla}"]) ? (string) $_ENV["TEAM_{$tla}"] : null;
-    $team = new Team($id, $name, $flag, $owner);
+    $team = new Team($id, $name, $acronym, $flag);
     $teams[$id] = $team;
 
     $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag]);
@@ -89,9 +91,13 @@ $webhookClient = new Client(
     ]
 );
 
-$slackWebhookService = new SlackIncomingWebhook($_ENV['SLACK_WEB_HOOK'], $webhookClient, $logger);
-$messager = new Messager($slackWebhookService);
-$loop = new Loop($stateBuilder, $messager, $logger);
+$config = Configuration::fromEnv();
+$slackWebhookService = new SlackIncomingWebhook($config->getWebHookUrl(), $webhookClient, $logger);
+$messenger = new Messenger($slackWebhookService, $config);
+$messengerCollection = new MessengerCollection();
+$messengerCollection->register($messenger);
+
+$loop = new Loop($stateBuilder, $messengerCollection, $logger);
 
 while (true) {
     try {

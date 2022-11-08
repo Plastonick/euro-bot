@@ -5,13 +5,12 @@ namespace Plastonick\Euros;
 use Plastonick\Euros\Transport\NotificationService;
 use function strtr;
 
-class Messager
+class Messenger implements Messenging
 {
-    private Emoji $emoji;
-
-    public function __construct(private readonly NotificationService $notificationService)
-    {
-        $this->emoji = new Emoji();
+    public function __construct(
+        private readonly NotificationService $notificationService,
+        public readonly Configuration $config
+    ) {
     }
 
     public function matchStarting(Game $match): void
@@ -19,12 +18,12 @@ class Messager
         $template = '{homeName} {homeOwner} {homeFlag} vs. {awayFlag} {awayName} {awayOwner} has kicked off! {kickOffEmoji}';
         $replacements = [
             '{homeName}' => $match->homeTeam->name,
-            '{homeOwner}' => $match->homeTeam->buildSlackName(),
+            '{homeOwner}' => $this->buildName($this->config->getTeamOwner($match->homeTeam)),
             '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
             '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
             '{awayName}' => $match->awayTeam->name,
-            '{awayOwner}' => $match->awayTeam->buildSlackName(),
-            '{kickOffEmoji}' => $this->emoji->getKickOffEmoji()
+            '{awayOwner}' => $this->buildName($this->config->getTeamOwner($match->awayTeam)),
+            '{kickOffEmoji}' => $this->config->getKickOffEmoji()
         ];
 
         $this->notificationService->send(strtr($template, $replacements));
@@ -37,9 +36,9 @@ class Messager
         }
 
         $comment = match ($match->winner) {
-            'HOME_TEAM' => "Congratulations {$match->homeTeam->name} {$this->emoji->getWinEmoji()}",
-            'AWAY_TEAM' => "Congratulations {$match->awayTeam->name} {$this->emoji->getWinEmoji()}",
-            default => "It's a draw! {$this->emoji->getDrawEmoji()}",
+            'HOME_TEAM' => "Congratulations {$match->homeTeam->name} {$this->config->getWinEmoji()}",
+            'AWAY_TEAM' => "Congratulations {$match->awayTeam->name} {$this->config->getWinEmoji()}",
+            default => "It's a draw! {$this->config->getDrawEmoji()}",
         };
 
         $template = '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! {comment}';
@@ -65,7 +64,7 @@ class Messager
             '{homeScore}' => (int) $match->homeScore,
             '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
             '{awayScore}' => (int) $match->awayScore,
-            '{scoreEmoji}' => $this->emoji->getScoreEmoji()
+            '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
         $this->notificationService->send(strtr($template, $replacements));
@@ -79,9 +78,22 @@ class Messager
             '{homeScore}' => (int) $match->homeScore,
             '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
             '{awayScore}' => (int) $match->awayScore,
-            '{scoreEmoji}' => $this->emoji->getScoreEmoji()
+            '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
         $this->notificationService->send(strtr($template, $replacements));
+    }
+
+    private function buildName(?string $owner): string
+    {
+        if ($owner === null) {
+            return '';
+        }
+
+        if (ctype_lower($owner)) {
+            return "<@{$owner}>";
+        }
+
+        return $owner;
     }
 }
