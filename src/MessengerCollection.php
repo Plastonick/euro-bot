@@ -87,7 +87,6 @@ class MessengerCollection
             }
         };
 
-
         $pool = new Pool(new Client(), $requests(), [
             'concurrency' => 10,
             'fulfilled' => function (Response $response, int $index): void {
