@@ -63,4 +63,17 @@ class Configuration
     {
         return $this->draw->retrieveRandomEmoji();
     }
+
+    public function toArray(): array
+    {
+        return [
+            'webhook' => $this->webHookUrl,
+            'service' => $this->service->value,
+            'owners' => $this->owners,
+            'win' => $this->win->toString(),
+            'score' => $this->score->toString(),
+            'kickOff' => $this->kickOff->toString(),
+            'draw' => $this->draw->toString(),
+        ];
+    }
 }
