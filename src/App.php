@@ -3,9 +3,12 @@
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use Plastonick\Euros\Configuration;
+use Plastonick\Euros\ConfigurationService;
+use Plastonick\Euros\ConfigurationServiceInterface;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
+use Plastonick\Euros\NullConfigurationService;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
@@ -97,9 +100,37 @@ $messenger = new Messenger($slackWebhookService, $config);
 $messengerCollection = new MessengerCollection();
 $messengerCollection->register($messenger);
 
+if ($_ENV['DB_HOST']) {
+    $connection = new \PDO(
+        "pgsql:host={$_ENV['DB_HOST']};port={$_ENV['DB_PORT']};dbname={$_ENV['DB_NAME']}",
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASS']
+    );
+
+    $configurationService = new ConfigurationService($connection);
+} else {
+    $configurationService = new NullConfigurationService();
+}
+
+
 $loop = new Loop($stateBuilder, $messengerCollection, $logger);
 
+$startOfTime = DateTime::createFromFormat('U', '0');
+
 while (true) {
+    // TODO handle deletions or just always retrieve all
+
+    /** @var ConfigurationServiceInterface $configurationService */
+    $newConfigurations = $configurationService->retrieveConfigurationsSince($startOfTime);
+
+    foreach ($newConfigurations as $newConfiguration) {
+        // TODO handle discord vs slack
+        $slackWebhookService = new SlackIncomingWebhook($newConfiguration->webHookUrl, $webhookClient, $logger);
+        $messenger = new Messenger($slackWebhookService, $newConfiguration);
+
+        $messengerCollection->register($messenger);
+    }
+
     try {
         $state = $loop->run($state);
     } catch (Exception $e) {

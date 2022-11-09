@@ -2,8 +2,8 @@
 
 namespace Plastonick\Euros;
 
-enum Service
+enum Service: string
 {
-    case SLACK;
-    case DISCORD;
+    case SLACK = 'slack';
+    case DISCORD = 'discord';
 }

@@ -4,6 +4,7 @@ namespace Plastonick\Euros;
 
 use function array_rand;
 use function explode;
+use function implode;
 
 class Emoji
 {
@@ -29,5 +30,10 @@ class Emoji
         }
 
         return ":{$this->emoji[$key]}:";
+    }
+
+    public function toString(): string
+    {
+        return implode(',', $this->emoji);
     }
 }
