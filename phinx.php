@@ -11,7 +11,7 @@ return [
         'development' => [
             'adapter' => 'pgsql',
             'host' => $_ENV['DB_HOST'] ?? 'localhost',
-            'name' => 'sweepstake',
+            'name' => $_ENV['DB_NAME'] ?? 'sweepstake',
             'user' => $_ENV['DB_USER'] ?? 'sweepstake',
             'pass' => $_ENV['DB_PASS'] ?? 'sweepstake',
             'port' => $_ENV['DB_PORT'] ?? '5444',
