@@ -13,14 +13,11 @@ use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
-require __DIR__ . '/../vendor/autoload.php';
-
-set_time_limit(0);
-
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->safeLoad();
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
 $logger = new Logger('sweepstake_app', [$stdout]);
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/');
+$dotenv->safeLoad();
 
 $competitionId = $_ENV['COMPETITION_ID'];
 
@@ -125,6 +122,7 @@ while (true) {
 
     /** @var ConfigurationServiceInterface $configurationService */
     $newConfigurations = $configurationService->retrieveConfigurationsSince($startOfTime);
+    $messengerCollection->clear();
 
     foreach ($newConfigurations as $newConfiguration) {
         // TODO handle discord vs slack

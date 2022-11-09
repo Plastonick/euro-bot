@@ -31,6 +31,13 @@ class MessengerCollection
         return $this;
     }
 
+    public function clear(): self
+    {
+        $this->messengers = [];
+
+        return $this;
+    }
+
     public function matchStarting(Game $match): void
     {
         $promises = [];
