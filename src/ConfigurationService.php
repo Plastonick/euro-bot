@@ -27,7 +27,7 @@ WHERE last_updated >= :updatedSince
 SQL;
 
         $statement = $this->connection->prepare($query);
-        $statement->execute(['updatedSince' => $lastUpdated]);
+        $statement->execute(['updatedSince' => $lastUpdated->format(DATE_ATOM)]);
 
         return array_map(fn(array $data) => $this->buildConfiguration($data), $statement->fetchAll());
     }
@@ -102,7 +102,7 @@ SQL;
     private function buildConfiguration(array $data): Configuration
     {
         return new Configuration(
-            $data['webhookUrl'],
+            $data['webhook_url'],
             Service::from($data['service']),
             json_decode($data['team_map'], true),
             Emoji::createFromString($data['win_emoji']),

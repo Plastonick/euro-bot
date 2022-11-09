@@ -94,11 +94,7 @@ $webhookClient = new Client(
     ]
 );
 
-$config = Configuration::fromEnv();
-$slackWebhookService = new SlackIncomingWebhook($config->webHookUrl, $webhookClient, $logger);
-$messenger = new Messenger($slackWebhookService, $config);
 $messengerCollection = new MessengerCollection();
-$messengerCollection->register($messenger);
 
 if ($_ENV['DB_HOST']) {
     $connection = new \PDO(
@@ -107,8 +103,15 @@ if ($_ENV['DB_HOST']) {
         $_ENV['DB_PASS']
     );
 
+    $logger->info('Found database credentials');
     $configurationService = new ConfigurationService($connection);
 } else {
+    $config = Configuration::fromEnv();
+    $slackWebhookService = new SlackIncomingWebhook($config->webHookUrl, $webhookClient, $logger);
+    $messenger = new Messenger($slackWebhookService, $config);
+    $messengerCollection->register($messenger);
+
+    $logger->debug('No database credentials, using environment credentials');
     $configurationService = new NullConfigurationService();
 }
 
