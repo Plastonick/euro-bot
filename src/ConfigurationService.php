@@ -82,7 +82,7 @@ INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emo
     :drawEmoji,
     :kickoffEmoji,      
     :lastUpdated      
-) ON CONFLICT DO UPDATE SET service = :service, team_map = :team_map, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated
+) ON CONFLICT (webhook_url) DO UPDATE SET service = :service, team_map = :teamMap, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated
  ;
 SQL;
         $insertStatement = $this->connection->prepare($insertQuery);
