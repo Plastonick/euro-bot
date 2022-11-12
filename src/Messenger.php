@@ -7,6 +7,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\NotificationService;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
+use function preg_replace;
 use function strtr;
 
 class Messenger implements Messenging
@@ -30,7 +31,7 @@ class Messenger implements Messenging
             '{kickOffEmoji}' => $this->config->getKickOffEmoji()
         ];
 
-        return $this->getNotificationService()->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
     }
 
     public function matchComplete(Game $match): PromiseInterface
@@ -52,7 +53,7 @@ class Messenger implements Messenging
             '{comment}' => $comment
         ];
 
-        return $this->getNotificationService()->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
     }
 
     public function goalScored(Team $scoringTeam, Game $match): PromiseInterface
@@ -67,7 +68,7 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->getNotificationService()->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
     }
 
     public function goalDisallowed(Game $match): PromiseInterface
@@ -81,7 +82,12 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->getNotificationService()->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+    }
+
+    private function buildMessage(string $template, array $replacements): string
+    {
+        return preg_replace('/\s{2,}/', ' ', strtr($template, $replacements));
     }
 
     private function getNotificationService(): NotificationService
