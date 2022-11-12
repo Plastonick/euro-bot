@@ -17,9 +17,17 @@ class Configuration
             }
         }
 
+        if (isset($_ENV['SLACK_WEB_HOOK'])) {
+            $webhook = $_ENV['SLACK_WEB_HOOK'];
+            $service = Service::SLACK;
+        } else {
+            $webhook = $_ENV['DISCORD_WEB_HOOK'];
+            $service = Service::DISCORD;
+        }
+
         return new Configuration(
-            $_ENV['SLACK_WEB_HOOK'],
-            Service::SLACK,
+            $webhook,
+            $service,
             $owners,
             Emoji::createFromString($_ENV['WIN_EMOJI'] ?? ''),
             Emoji::createFromString($_ENV['SCORE_EMOJI'] ?? ''),

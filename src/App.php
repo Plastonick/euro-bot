@@ -11,7 +11,6 @@ use Plastonick\Euros\MessengerCollection;
 use Plastonick\Euros\NullConfigurationService;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
-use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
 $logger = new Logger('sweepstake_app', [$stdout]);
@@ -104,8 +103,7 @@ if ($_ENV['DB_HOST']) {
     $configurationService = new ConfigurationService($connection);
 } else {
     $config = Configuration::fromEnv();
-    $slackWebhookService = new SlackIncomingWebhook($config->webHookUrl, $webhookClient, $logger);
-    $messenger = new Messenger($slackWebhookService, $config);
+    $messenger = new Messenger($webhookClient, $config);
     $messengerCollection->register($messenger);
 
     $logger->debug('No database credentials, using environment credentials');
@@ -118,16 +116,14 @@ $loop = new Loop($stateBuilder, $messengerCollection, $logger);
 $startOfTime = DateTime::createFromFormat('U', '0');
 
 while (true) {
-    // TODO handle deletions or just always retrieve all
+    // TODO handle deletions or just accept always retrieving all
 
     /** @var ConfigurationServiceInterface $configurationService */
     $newConfigurations = $configurationService->retrieveConfigurationsSince($startOfTime);
     $messengerCollection->clear();
 
     foreach ($newConfigurations as $newConfiguration) {
-        // TODO handle discord vs slack
-        $slackWebhookService = new SlackIncomingWebhook($newConfiguration->webHookUrl, $webhookClient, $logger);
-        $messenger = new Messenger($slackWebhookService, $newConfiguration);
+        $messenger = new Messenger($webhookClient, $newConfiguration);
 
         $messengerCollection->register($messenger);
     }

@@ -2,14 +2,17 @@
 
 namespace Plastonick\Euros;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
+use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\NotificationService;
+use Plastonick\Euros\Transport\SlackIncomingWebhook;
 use function strtr;
 
 class Messenger implements Messenging
 {
     public function __construct(
-        private readonly NotificationService $notificationService,
+        private readonly Client $client,
         public readonly Configuration $config
     ) {
     }
@@ -27,7 +30,7 @@ class Messenger implements Messenging
             '{kickOffEmoji}' => $this->config->getKickOffEmoji()
         ];
 
-        return $this->notificationService->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send(strtr($template, $replacements));
     }
 
     public function matchComplete(Game $match): PromiseInterface
@@ -49,7 +52,7 @@ class Messenger implements Messenging
             '{comment}' => $comment
         ];
 
-        return $this->notificationService->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send(strtr($template, $replacements));
     }
 
     public function goalScored(Team $scoringTeam, Game $match): PromiseInterface
@@ -64,7 +67,7 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->notificationService->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send(strtr($template, $replacements));
     }
 
     public function goalDisallowed(Game $match): PromiseInterface
@@ -78,7 +81,15 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->notificationService->send(strtr($template, $replacements));
+        return $this->getNotificationService()->send(strtr($template, $replacements));
+    }
+
+    private function getNotificationService(): NotificationService
+    {
+        return match ($this->config->service) {
+            Service::SLACK => new SlackIncomingWebhook($this->config->webHookUrl, $this->client),
+            Service::DISCORD => new DiscordIncomingWebhook($this->config->webHookUrl, $this->client)
+        };
     }
 
     private function buildName(?string $owner): string
