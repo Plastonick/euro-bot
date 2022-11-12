@@ -23,6 +23,10 @@ class Emoji
 
     public function retrieveRandomEmoji(): ?string
     {
+        if (!$this->emoji) {
+            return null;
+        }
+
         $key = array_rand($this->emoji);
 
         if (!isset($this->emoji[$key])) {
