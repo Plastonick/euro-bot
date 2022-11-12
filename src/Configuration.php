@@ -2,7 +2,7 @@
 
 namespace Plastonick\Euros;
 
-use function strtolower;
+use function strtoupper;
 use function substr;
 
 class Configuration
@@ -12,7 +12,7 @@ class Configuration
         $owners = [];
         foreach ($_ENV as $key => $value) {
             if (str_starts_with($key, 'TEAM_')) {
-                $acronym = strtolower(substr($key, 5, 3));
+                $acronym = strtoupper(substr($key, 5, 3));
                 $owners[$acronym] = $value;
             }
         }
@@ -49,7 +49,7 @@ class Configuration
 
     public function getTeamOwner(Team $team): ?string
     {
-        return $this->owners[$team->acronym] ?? null;
+        return $this->owners[$team->countryCode->name] ?? null;
     }
 
     public function getWinEmoji(): ?string

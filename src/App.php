@@ -5,6 +5,7 @@ use Monolog\Logger;
 use Plastonick\Euros\Configuration;
 use Plastonick\Euros\ConfigurationService;
 use Plastonick\Euros\ConfigurationServiceInterface;
+use Plastonick\Euros\CountryCode;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
@@ -29,52 +30,19 @@ $apiClient = new \GuzzleHttp\Client(
     ]
 );
 
-$countryCodeMap = [
-    'GER' => 'de',
-    'ESP' => 'es',
-    'POR' => 'pt',
-    'SVK' => 'sk',
-    'ENG' => 'england',
-    'FRA' => 'fr',
-    'DEN' => 'dk',
-    'ITA' => 'it',
-    'SUI' => 'ch',
-    'UKR' => 'ua',
-    'SWE' => 'se',
-    'POL' => 'pl',
-    'CZE' => 'cz',
-    'CRO' => 'hr',
-    'TUR' => 'tr',
-    'BEL' => 'be',
-    'RUS' => 'ru',
-    'AUT' => 'at',
-    'HUN' => 'hu',
-    'WAL' => 'wales',
-    'FIN' => 'fi',
-    'MKD' => 'mk',
-    'NED' => 'nl',
-    'SCO' => 'scotland',
-];
-
 $teamsJson = $apiClient->get("competitions/{$competitionId}/teams");
 $teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
 
 $teams = [];
 foreach ($teamsArray as $teamData) {
-    $acronym = $teamData['tla'];
-    if (isset($countryCodeMap[$acronym])) {
-        $flag = $countryCodeMap[$acronym];
-    } else {
-        $logger->warning('Failed to retrieve flag name', ['acronym' => $acronym]);
-        $flag = 'sc';
-    }
+    $country = CountryCode::from($teamData['tla']);
 
     $id = $teamData['id'];
     $name = $teamData['name'];
-    $team = new Team($id, $name, $acronym, $flag);
+    $team = new Team($id, $name, $country, $country->getFlagCode());
     $teams[$id] = $team;
 
-    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag, 'tla' => $acronym]);
+    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'tla' => $country->name]);
 }
 
 $stateBuilder = new StateBuilder($apiClient, $logger);
