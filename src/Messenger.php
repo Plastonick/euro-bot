@@ -23,8 +23,8 @@ class Messenger implements Messenging
         $replacements = [
             '{homeName}' => $match->homeTeam->name,
             '{homeOwner}' => $this->buildName($this->config->getTeamOwner($match->homeTeam)),
-            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
-            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji($this->config->service),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji($this->config->service),
             '{awayName}' => $match->awayTeam->name,
             '{awayOwner}' => $this->buildName($this->config->getTeamOwner($match->awayTeam)),
             '{kickOffEmoji}' => $this->config->getKickOffEmoji()
@@ -44,10 +44,10 @@ class Messenger implements Messenging
         $template = '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! {comment}';
         $replacements = [
             '{homeName}' => $match->homeTeam->name,
-            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji($this->config->service),
             '{homeScore}' => (int) $match->homeScore,
             '{awayScore}' => (int) $match->awayScore,
-            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji($this->config->service),
             '{awayName}' => $match->awayTeam->name,
             '{comment}' => $comment
         ];
@@ -60,9 +60,9 @@ class Messenger implements Messenging
         $template = '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
             '{scoringTeam}' => $scoringTeam->name,
-            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji($this->config->service),
             '{homeScore}' => (int) $match->homeScore,
-            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji($this->config->service),
             '{awayScore}' => (int) $match->awayScore,
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
@@ -74,9 +74,9 @@ class Messenger implements Messenging
     {
         $template = 'NO GOAL! {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
-            '{homeFlag}' => $match->homeTeam->getFlagEmoji(),
+            '{homeFlag}' => $match->homeTeam->getFlagEmoji($this->config->service),
             '{homeScore}' => (int) $match->homeScore,
-            '{awayFlag}' => $match->awayTeam->getFlagEmoji(),
+            '{awayFlag}' => $match->awayTeam->getFlagEmoji($this->config->service),
             '{awayScore}' => (int) $match->awayScore,
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];

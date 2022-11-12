@@ -12,8 +12,11 @@ class Team
     ) {
     }
 
-    public function getFlagEmoji(): string
+    public function getFlagEmoji(Service $service): string
     {
-        return ":flag-{$this->flagCode}:";
+        return match ($service) {
+            Service::DISCORD => ":flag_{$this->flagCode}:",
+            Service::SLACK => ":flag-{$this->flagCode}:"
+        };
     }
 }
