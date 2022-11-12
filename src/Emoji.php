@@ -4,39 +4,40 @@ namespace Plastonick\Euros;
 
 use function array_rand;
 use function explode;
+use function implode;
 
 class Emoji
 {
-    public function getWinEmoji(): ?string
+    public static function createFromString(string $list): self
     {
-        return $this->retrieveRandomEmoji('WIN_EMOJI');
+        if ($list === '') {
+            return new self([]);
+        } else {
+            return new self(explode(',', $list));
+        }
     }
 
-    public function getScoreEmoji(): ?string
+    public function __construct(private readonly array $emoji)
     {
-        return $this->retrieveRandomEmoji('SCORE_EMOJI');
     }
 
-    public function getKickOffEmoji(): ?string
+    public function retrieveRandomEmoji(): ?string
     {
-        return $this->retrieveRandomEmoji('KICK_OFF_EMOJI');
-    }
-
-    public function getDrawEmoji(): ?string
-    {
-        return $this->retrieveRandomEmoji('DRAW_EMOJI');
-    }
-
-    private function retrieveRandomEmoji(string $key): ?string
-    {
-        if (!isset($_ENV[$key]) || $_ENV[$key] === '') {
+        if (!$this->emoji) {
             return null;
         }
 
-        $emoji = explode(',', $_ENV[$key] ?? '');
+        $key = array_rand($this->emoji);
 
-        $key = array_rand($emoji, 1);
+        if (!isset($this->emoji[$key])) {
+            return null;
+        }
 
-        return ":{$emoji[$key]}:" ?? null;
+        return ":{$this->emoji[$key]}:";
+    }
+
+    public function toString(): string
+    {
+        return implode(',', $this->emoji);
     }
 }

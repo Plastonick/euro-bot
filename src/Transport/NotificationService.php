@@ -2,14 +2,9 @@
 
 namespace Plastonick\Euros\Transport;
 
-use Throwable;
+use GuzzleHttp\Promise\PromiseInterface;
 
 interface NotificationService
 {
-    /**
-     * @param string $message
-     *
-     * @throws Throwable
-     */
-    public function send(string $message): void;
+    public function send(string $message): PromiseInterface;
 }

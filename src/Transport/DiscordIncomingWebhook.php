@@ -5,7 +5,7 @@ namespace Plastonick\Euros\Transport;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 
-class SlackIncomingWebhook implements NotificationService
+class DiscordIncomingWebhook implements NotificationService
 {
     public function __construct(
         private string $webhookUrl,
@@ -17,7 +17,7 @@ class SlackIncomingWebhook implements NotificationService
     {
         return $this->client->postAsync(
             $this->webhookUrl,
-            ['json' => ['text' => $message]]
+            ['json' => ['content' => $message, 'embeds' => null, 'attachments' => []]]
         );
     }
 }

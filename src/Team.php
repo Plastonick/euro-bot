@@ -2,38 +2,31 @@
 
 namespace Plastonick\Euros;
 
-use function ctype_lower;
+use function strlen;
 
 class Team
 {
-    public int $id;
-    public string $name;
-    public string $flagCode;
-    public ?string $owner;
-
-    public function __construct(int $id, string $name, string $flagCode, ?string $owner)
-    {
-        $this->id = $id;
-        $this->name = $name;
-        $this->flagCode = $flagCode;
-        $this->owner = $owner;
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly CountryCode $countryCode,
+        public readonly string $flagCode
+    ) {
     }
 
-    public function buildSlackName(): string
+    public function getFlagEmoji(Service $service): string
     {
-        if (ctype_lower($this->owner)) {
-            return "<@{$this->owner}>";
+        $prefix = match ($service) {
+            Service::DISCORD => 'flag_',
+            Service::SLACK => 'flag-'
+        };
+
+        // Handles the UK countries competing as distinct entities.
+        // Discord flag emoji for England is merely `england` whilst Slack uses `flag-england`
+        if ($service->is(Service::DISCORD) && strlen($this->flagCode) > 2) {
+            $prefix = '';
         }
 
-        if ($this->owner === null) {
-            return "Unknown";
-        }
-
-        return $this->owner;
-    }
-
-    public function getFlagEmoji(): string
-    {
-        return ":flag-{$this->flagCode}:";
+        return ":{$prefix}{$this->flagCode}:";
     }
 }
