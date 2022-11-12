@@ -40,7 +40,7 @@ $app->add(function (Request $request, RequestHandler $handler): Response {
     $response = $handler->handle($request);
 
     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-    return $response->withHeader('Access-Control-Allow-Methods', '*');
+    return $response->withHeader('Access-Control-Allow-Methods', 'PUT,GET,DELETE,OPTIONS');
 });
 
 $app->addRoutingMiddleware();
