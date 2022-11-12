@@ -8,6 +8,7 @@ use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\NotificationService;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 use function preg_replace;
+use function str_starts_with;
 use function strtr;
 
 class Messenger implements Messenging
@@ -104,8 +105,8 @@ class Messenger implements Messenging
             return '';
         }
 
-        if (ctype_lower($owner)) {
-            return "<@{$owner}>";
+        if (str_starts_with($owner, '@')) {
+            return "<{$owner}>";
         }
 
         return $owner;
