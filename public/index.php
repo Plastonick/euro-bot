@@ -5,7 +5,9 @@ use Plastonick\Euros\Emoji;
 use Plastonick\Euros\Service;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Factory\AppFactory;
+use Slim\Routing\RouteContext;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -32,8 +34,29 @@ $connection = new \PDO(
 
 $configurationService = new ConfigurationService($connection);
 
+$app->addBodyParsingMiddleware();
+
+$app->add(function (Request $request, RequestHandler $handler): Response {
+    $routeContext = RouteContext::fromRequest($request);
+    $routingResults = $routeContext->getRoutingResults();
+    $methods = $routingResults->getAllowedMethods();
+
+    $response = $handler->handle($request);
+
+    $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+    return $response->withHeader('Access-Control-Allow-Methods', implode(',', $methods));
+});
+
+$app->addRoutingMiddleware();
+
 $app->get('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
-    $configuration = $configurationService->retrieveConfiguration(trim($request->getQueryParams()['url']));
+    $url = $request->getQueryParams()['url'] ?? null;
+
+    if (!$url) {
+        return $response->withStatus(404);
+    }
+
+    $configuration = $configurationService->retrieveConfiguration(trim($url));
 
     if ($configuration) {
         $response->getBody()->write(json_encode($configuration->toArray()));
@@ -45,14 +68,20 @@ $app->get('/configuration', function (Request $request, Response $response, arra
 
 });
 $app->delete('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
-    $result = $configurationService->deleteConfiguration(trim($request->getQueryParams()['url']));
+    $url = $request->getQueryParams()['url'] ?? null;
+
+    if (!$url) {
+        return $response->withStatus(404);
+    }
+
+    $result = $configurationService->deleteConfiguration(trim($url));
 
     if ($result) {
         $response->getBody()->write('Removed configuration if it existed');
         return $response;
     } else {
         $response->getBody()->write('Failed to delete configuration');
-        return $response->withStatus(404);
+        return $response->withStatus(500);
     }
 
 });

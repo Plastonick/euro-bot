@@ -75,7 +75,7 @@ foreach ($teamsArray as $teamData) {
     $team = new Team($id, $name, $acronym, $flag);
     $teams[$id] = $team;
 
-    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag]);
+    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'flag' => $flag, 'tla' => $acronym]);
 }
 
 $stateBuilder = new StateBuilder($apiClient, $logger);
