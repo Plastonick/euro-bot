@@ -37,14 +37,10 @@ $configurationService = new ConfigurationService($connection);
 $app->addBodyParsingMiddleware();
 
 $app->add(function (Request $request, RequestHandler $handler): Response {
-    $routeContext = RouteContext::fromRequest($request);
-    $routingResults = $routeContext->getRoutingResults();
-    $methods = $routingResults->getAllowedMethods();
-
     $response = $handler->handle($request);
 
     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-    return $response->withHeader('Access-Control-Allow-Methods', implode(',', $methods));
+    return $response->withHeader('Access-Control-Allow-Methods', '*');
 });
 
 $app->addRoutingMiddleware();
