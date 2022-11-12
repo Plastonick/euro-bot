@@ -4,16 +4,20 @@ namespace Plastonick\Euros;
 
 use DateTimeInterface;
 
-class NullConfigurationService implements ConfigurationServiceInterface
+class StaticConfigurationService implements ConfigurationServiceInterface
 {
+    public function __construct(private readonly Configuration $configuration)
+    {
+    }
+
     public function retrieveConfigurationsSince(DateTimeInterface $lastUpdated): array
     {
-        return [];
+        return [$this->configuration];
     }
 
     public function retrieveConfiguration(string $webhookUrl): ?Configuration
     {
-        return null;
+        return $this->configuration;
     }
 
     public function deleteConfiguration(string $webhookUrl): bool

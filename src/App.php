@@ -8,7 +8,7 @@ use Plastonick\Euros\ConfigurationServiceInterface;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
-use Plastonick\Euros\NullConfigurationService;
+use Plastonick\Euros\StaticConfigurationService;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
 
@@ -107,7 +107,7 @@ if ($_ENV['DB_HOST']) {
     $messengerCollection->register($messenger);
 
     $logger->debug('No database credentials, using environment credentials');
-    $configurationService = new NullConfigurationService();
+    $configurationService = new StaticConfigurationService($config);
 }
 
 
