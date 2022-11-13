@@ -66,7 +66,7 @@ $app->get('/configuration', function (Request $request, Response $response, arra
         $response->getBody()->write(json_encode($configuration->toArray()));
         return $response;
     } else {
-        $response->getBody()->write((string) new ApiError('Could not find configuration'));
+        $response->getBody()->write((string) new ApiError('Could not find existing configuration'));
         return $response->withStatus(404);
     }
 
@@ -81,7 +81,7 @@ $app->delete('/configuration', function (Request $request, Response $response, a
     $result = $configurationService->deleteConfiguration(trim($url));
 
     if ($result) {
-        $response->getBody()->write('Removed configuration if it existed');
+        $response->getBody()->write(json_encode(['message' => 'Removed configuration if it existed']));
         return $response;
     } else {
         $response->getBody()->write((string) new ApiError('Failed to delete configuration'));
@@ -96,7 +96,7 @@ $app->put('/configuration', function (Request $request, Response $response, arra
     $webhookUrl = filter_var($webhookUrl, FILTER_SANITIZE_URL);
 
     if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false) {
-        $response->getBody()->write((string) new ApiError('Invalid URL provided'));
+        $response->getBody()->write((string) new ApiError('Invalid webhook provided'));
         return $response->withStatus(400);
     }
 
