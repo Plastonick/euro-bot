@@ -31,4 +31,8 @@ interface ConfigurationServiceInterface
         Emoji $drawEmoji,
         Emoji $kickoffEmoji
     ): bool;
+
+    public function persistTestWebhook(string $url, Service $service): bool;
+
+    public function popTestWebhooks(): array;
 }

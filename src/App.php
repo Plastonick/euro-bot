@@ -9,9 +9,12 @@ use Plastonick\Euros\CountryCode;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
+use Plastonick\Euros\Service;
 use Plastonick\Euros\StaticConfigurationService;
 use Plastonick\Euros\StateBuilder;
 use Plastonick\Euros\Team;
+use Plastonick\Euros\Transport\DiscordIncomingWebhook;
+use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
 $logger = new Logger('sweepstake_app', [$stdout]);
@@ -82,11 +85,36 @@ if ($_ENV['DB_HOST']) {
 $loop = new Loop($stateBuilder, $messengerCollection, $logger);
 
 $startOfTime = DateTime::createFromFormat('U', '0');
+$sleepUntil = time();
 
 while (true) {
-    // TODO handle deletions or just accept always retrieving all
-
     /** @var ConfigurationServiceInterface $configurationService */
+    try {
+        $tests = $configurationService->popTestWebhooks();
+        foreach ($tests as ['id' => $id, 'webhook_url' => $webhookUrl, 'service' => $service]) {
+            $service = Service::tryFrom($service);
+            $client = match ($service) {
+                Service::SLACK => new SlackIncomingWebhook($webhookUrl, $webhookClient),
+                default => new DiscordIncomingWebhook($webhookUrl, $webhookClient),
+            };
+
+            $link = match ($service) {
+                Service::SLACK => '<https://sweepstake.services|World Cup Sweepstakes Announcer>',
+                default => '[World Cup Sweepstakes Announcer](https://sweepstake.services)',
+            };
+
+            $logger->info('Testing webhook', ['service' => $service]);
+            $client->send("This is a test message from {$link}")->wait();
+        }
+    } catch (Throwable $e) {
+        $logger->error('Error occurred sending test events', ['throwable' => $e]);
+    }
+
+    if (time() < $sleepUntil) {
+        sleep(1);
+        continue;
+    }
+
     $newConfigurations = $configurationService->retrieveConfigurationsSince($startOfTime);
     $messengerCollection->clear();
 
@@ -102,5 +130,5 @@ while (true) {
         $logger->error($e->getMessage());
     }
 
-    sleep(max(1, $state->getSleepLength()));
+    $sleepUntil = time() + abs($state->getSleepLength());
 }

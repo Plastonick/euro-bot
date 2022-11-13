@@ -5,6 +5,7 @@ namespace Plastonick\Euros;
 use DateTimeInterface;
 use PDO;
 use function array_map;
+use function date;
 use function json_decode;
 use function json_encode;
 use const DATE_ATOM;
@@ -97,6 +98,34 @@ SQL;
             'kickoffEmoji' => $kickoffEmoji->toString(),
             'lastUpdated' => date(DATE_ATOM),
         ]);
+    }
+
+    public function persistTestWebhook(string $url, Service $service): bool
+    {
+        $insertQuery = <<<SQL
+INSERT INTO webhook_test (webhook_url, service) VALUES (:webhookUrl, :service) ON CONFLICT DO NOTHING;
+SQL;
+        $insertStatement = $this->connection->prepare($insertQuery);
+
+        return $insertStatement->execute([
+            'webhookUrl' => $url,
+            'service' => $service->value,
+        ]);
+    }
+
+    public function popTestWebhooks(): array
+    {
+        $query = <<<SQL
+SELECT id, webhook_url, service
+FROM webhook_test
+SQL;
+
+        $statement = $this->connection->prepare($query);
+        $statement->execute();
+
+        $this->connection->exec('DELETE FROM webhook_test');
+
+        return $statement->fetchAll();
     }
 
     private function buildConfiguration(array $data): Configuration

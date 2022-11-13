@@ -126,5 +126,34 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         return $response->withStatus(500);
     }
 });
+$app->post('/webhook-test', function (Request $request, Response $response, array $args) use ($configurationService) {
+    $data = json_decode((string) $request->getBody(), true);
+
+    $webhookUrl = trim($data['webhook']);
+    $webhookUrl = filter_var($webhookUrl, FILTER_SANITIZE_URL);
+
+    if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false) {
+        $response->getBody()->write((string) new ApiError('Invalid webhook provided'));
+        return $response->withStatus(400);
+    }
+
+    $service = Service::tryFrom($data['service']);
+    if (!$service) {
+        $validServiceNames = array_column(Service::cases(), 'name');
+        $error = new ApiError('Invalid service type provided, valid: ' . implode(', ', $validServiceNames));
+        $response->getBody()->write((string) $error);
+        return $response->withStatus(400);
+    }
+
+    $result = $configurationService->persistTestWebhook($webhookUrl, $service);
+
+    if ($result) {
+        $response->getBody()->write(json_encode(['message' => 'Queued configuration test event']));
+        return $response->withStatus(200);
+    } else {
+        $response->getBody()->write((string) new ApiError('Something went wrong'));
+        return $response->withStatus(500);
+    }
+});
 
 $app->run();

@@ -36,4 +36,14 @@ class StaticConfigurationService implements ConfigurationServiceInterface
     ): bool {
         return true;
     }
+
+    public function persistTestWebhook(string $url, Service $service): bool
+    {
+        return true;
+    }
+
+    public function popTestWebhooks(): array
+    {
+        return [];
+    }
 }
