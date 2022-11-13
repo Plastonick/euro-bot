@@ -7,7 +7,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Factory\AppFactory;
-use Slim\Routing\RouteContext;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -15,6 +14,8 @@ $app = AppFactory::create();
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
+
+header('Access-Control-Allow-Origin: *');
 
 $dbHost = $_ENV['DB_HOST'] ?? null;
 $dbPort = $_ENV['DB_PORT'] ?? null;
@@ -39,11 +40,17 @@ $app->addBodyParsingMiddleware();
 $app->add(function (Request $request, RequestHandler $handler): Response {
     $response = $handler->handle($request);
 
-    $response = $response->withHeader('Access-Control-Allow-Origin', '*');
-    return $response->withHeader('Access-Control-Allow-Methods', 'PUT,GET,DELETE,OPTIONS');
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'PUT,GET,DELETE,OPTIONS');
 });
 
 $app->addRoutingMiddleware();
+
+$app->options('/{routes:.+}', function (Request $request, Response $response): Response {
+    return $response;
+});
 
 $app->get('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
     $url = $request->getQueryParams()['url'] ?? null;
@@ -82,7 +89,7 @@ $app->delete('/configuration', function (Request $request, Response $response, a
 
 });
 $app->put('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
-    $data = json_decode($request->getBody()->getContents(), true);
+    $data = json_decode((string) $request->getBody(), true);
     $webhookUrl = trim($data['webhook']);
 
     $webhookUrl = filter_var($webhookUrl, FILTER_SANITIZE_URL);
@@ -92,9 +99,16 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         return $response->withStatus(400);
     }
 
+    $service = Service::tryFrom($data['service']);
+    if (!$service) {
+        $validServiceNames = array_column(Service::cases(), 'name');
+        $response->getBody()->write('Invalid service type provided, valid: ' . implode(', ', $validServiceNames));
+        return $response->withStatus(400);
+    }
+
     $result = $configurationService->persistConfiguration(
         $webhookUrl,
-        Service::from($data['service']),
+        $service,
         $data['owners'],
         Emoji::createFromString($data['win']),
         Emoji::createFromString($data['score']),
