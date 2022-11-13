@@ -21,7 +21,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
 $logger = new Logger('sweepstake_app', [$stdout]);
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
 $competitionId = $_ENV['COMPETITION_ID'];
