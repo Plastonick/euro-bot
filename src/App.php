@@ -16,6 +16,8 @@ use Plastonick\Euros\Team;
 use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
 $stdout = new Monolog\Handler\StreamHandler('php://stdout');
 $logger = new Logger('sweepstake_app', [$stdout]);
 
