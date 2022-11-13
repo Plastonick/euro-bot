@@ -1,5 +1,6 @@
 <?php
 
+use Plastonick\Euros\ApiError;
 use Plastonick\Euros\ConfigurationService;
 use Plastonick\Euros\Emoji;
 use Plastonick\Euros\Service;
@@ -65,7 +66,7 @@ $app->get('/configuration', function (Request $request, Response $response, arra
         $response->getBody()->write(json_encode($configuration->toArray()));
         return $response;
     } else {
-        $response->getBody()->write('Could not find configuration');
+        $response->getBody()->write((string) new ApiError('Could not find configuration'));
         return $response->withStatus(404);
     }
 
@@ -83,7 +84,7 @@ $app->delete('/configuration', function (Request $request, Response $response, a
         $response->getBody()->write('Removed configuration if it existed');
         return $response;
     } else {
-        $response->getBody()->write('Failed to delete configuration');
+        $response->getBody()->write((string) new ApiError('Failed to delete configuration'));
         return $response->withStatus(500);
     }
 
@@ -95,14 +96,15 @@ $app->put('/configuration', function (Request $request, Response $response, arra
     $webhookUrl = filter_var($webhookUrl, FILTER_SANITIZE_URL);
 
     if (filter_var($webhookUrl, FILTER_VALIDATE_URL) === false) {
-        $response->getBody()->write('Invalid URL provided');
+        $response->getBody()->write((string) new ApiError('Invalid URL provided'));
         return $response->withStatus(400);
     }
 
     $service = Service::tryFrom($data['service']);
     if (!$service) {
         $validServiceNames = array_column(Service::cases(), 'name');
-        $response->getBody()->write('Invalid service type provided, valid: ' . implode(', ', $validServiceNames));
+        $error = new ApiError('Invalid service type provided, valid: ' . implode(', ', $validServiceNames));
+        $response->getBody()->write((string) $error);
         return $response->withStatus(400);
     }
 
@@ -119,7 +121,7 @@ $app->put('/configuration', function (Request $request, Response $response, arra
     if ($result) {
         return $response->withStatus(200);
     } else {
-        $response->getBody()->write('Something went wrong');
+        $response->getBody()->write((string) new ApiError('Something went wrong'));
         return $response->withStatus(500);
     }
 });
