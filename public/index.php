@@ -119,6 +119,7 @@ $app->put('/configuration', function (Request $request, Response $response, arra
     );
 
     if ($result) {
+        $response->getBody()->write(json_encode(['message' => 'Successfully updated configuration']));
         return $response->withStatus(200);
     } else {
         $response->getBody()->write((string) new ApiError('Something went wrong'));
