@@ -109,6 +109,6 @@ class Messenger implements Messenging
             return "<{$owner}>";
         }
 
-        return $owner;
+        return "({$owner})";
     }
 }
