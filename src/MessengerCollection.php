@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
 use function count;
 
 class MessengerCollection
@@ -16,6 +17,10 @@ class MessengerCollection
      * @var Messenger[]
      */
     private array $messengers = [];
+
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
 
     public function register(Messenger $messager): self
     {
@@ -97,10 +102,13 @@ class MessengerCollection
         $pool = new Pool(new Client(), $requests(), [
             'concurrency' => 10,
             'fulfilled' => function (Response $response, int $index): void {
-                // this is delivered each successful response
+                // do nothing
             },
             'rejected' => function (RequestException $reason, int $index): void {
-                // this is delivered each failed request
+                $this->logger->error(
+                    'Failed to deliver message',
+                    ['message' => $reason->getMessage()]
+                );
             },
         ]);
 

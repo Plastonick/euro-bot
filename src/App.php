@@ -63,7 +63,7 @@ $webhookClient = new Client(
     ]
 );
 
-$messengerCollection = new MessengerCollection();
+$messengerCollection = new MessengerCollection($logger);
 
 if ($_ENV['DB_HOST']) {
     $connection = new \PDO(
