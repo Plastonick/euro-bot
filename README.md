@@ -1,8 +1,8 @@
 # Sweepstakes Announcer
 
-Slack Bot to announce football events and tag the relevant team "owners"!
+Bot to announce football events and tag the relevant team "owners" to either Slack or Discord using "Incoming Webhooks".
 
-This bot is useful for keeping people involved in World Cup or Euros sweepstakes, each country is assigned to a tag or full name. Tags are detected by checking for a preceding "@".
+This bot is useful for keeping people involved in World Cup or other major football tournament sweepstakes, each country is assigned to a tag or full name. Tags are detected by checking for a preceding "@".
 
 This bot then posts to Slack or Discord at the start or end of a match, tagging the relevant people involved in the match as well as the result of that match.
 
@@ -33,3 +33,7 @@ docker run -d --rm \
     -v <local/path/to/.env>:/app/.env \
     davidpugh/euro-bot:latest
 ```
+
+### Frontend
+
+See [Sweepstakes Frontend](https://github.com/Plastonick/Sweepstakes-Frontend) for the frontend code to host this.
