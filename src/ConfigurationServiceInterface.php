@@ -29,7 +29,12 @@ interface ConfigurationServiceInterface
         Emoji $winEmoji,
         Emoji $scoreEmoji,
         Emoji $drawEmoji,
-        Emoji $kickoffEmoji
+        Emoji $kickoffEmoji,
+        ?string $kickoffTemplate,
+        ?string $scoreTemplate,
+        ?string $disallowedTemplate,
+        ?string $winTemplate,
+        ?string $drawTemplate
     ): bool;
 
     public function persistTestWebhook(string $url, Service $service): bool;
