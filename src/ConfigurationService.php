@@ -61,6 +61,7 @@ WHERE webhook_url = :webhookUrl
 SQL;
 
         $statement = $this->connection->prepare($query);
+
         return $statement->execute(['webhookUrl' => $webhookUrl]);
     }
 
@@ -71,10 +72,15 @@ SQL;
         Emoji $winEmoji,
         Emoji $scoreEmoji,
         Emoji $drawEmoji,
-        Emoji $kickoffEmoji
+        Emoji $kickoffEmoji,
+        ?string $kickoffTemplate,
+        ?string $scoreTemplate,
+        ?string $disallowedTemplate,
+        ?string $winTemplate,
+        ?string $drawTemplate
     ): bool {
         $insertQuery = <<<SQL
-INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emoji, draw_emoji, kickoff_emoji, last_updated) VALUES (
+INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emoji, draw_emoji, kickoff_emoji, last_updated, kickoff_template, score_template, disallowed_template, win_template, draw_template) VALUES (
     :webhookUrl,
     :service,
     :teamMap,
@@ -82,8 +88,13 @@ INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emo
     :scoreEmoji,
     :drawEmoji,
     :kickoffEmoji,      
-    :lastUpdated      
-) ON CONFLICT (webhook_url) DO UPDATE SET service = :service, team_map = :teamMap, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated
+    :lastUpdated,
+    :kickoffTemplate,
+    :scoreTemplate,
+    :disallowedTemplate,
+    :winTemplate,
+    :drawTemplate
+) ON CONFLICT (webhook_url) DO UPDATE SET service = :service, team_map = :teamMap, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated, kickoff_template = :kickoffTemplate, score_template = :scoreTemplate, disallowed_template = :disallowedTemplate, win_template = :winTemplate, draw_template = :drawTemplate
  ;
 SQL;
         $insertStatement = $this->connection->prepare($insertQuery);
@@ -97,6 +108,11 @@ SQL;
             'drawEmoji' => $drawEmoji->toString(),
             'kickoffEmoji' => $kickoffEmoji->toString(),
             'lastUpdated' => date(DATE_ATOM),
+            'kickoffTemplate' => $kickoffTemplate,
+            'scoreTemplate' => $scoreTemplate,
+            'disallowedTemplate' => $disallowedTemplate,
+            'winTemplate' => $winTemplate,
+            'drawTemplate' => $drawTemplate,
         ]);
     }
 
@@ -137,7 +153,12 @@ SQL;
             Emoji::createFromString($data['win_emoji']),
             Emoji::createFromString($data['score_emoji']),
             Emoji::createFromString($data['kickoff_emoji']),
-            Emoji::createFromString($data['draw_emoji'])
+            Emoji::createFromString($data['draw_emoji']),
+            $data['kickoff_template'],
+            $data['score_template'],
+            $data['disallowed_template'],
+            $data['win_template'],
+            $data['draw_template'],
         );
     }
 }

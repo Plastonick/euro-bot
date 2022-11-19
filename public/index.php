@@ -108,6 +108,9 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         return $response->withStatus(400);
     }
 
+    // The template might come through as an empty string, that's as good as null
+    $unwrapTemplate = fn(?string $template): ?string => $template ?: null;
+
     $result = $configurationService->persistConfiguration(
         $webhookUrl,
         $service,
@@ -116,6 +119,11 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         Emoji::createFromString($data['score']),
         Emoji::createFromString($data['kickOff']),
         Emoji::createFromString($data['draw']),
+        $unwrapTemplate($data['kickoffTemplate'] ?? null),
+        $unwrapTemplate($data['scoreTemplate'] ?? null),
+        $unwrapTemplate($data['disallowedTemplate'] ?? null),
+        $unwrapTemplate($data['wonTemplate'] ?? null),
+        $unwrapTemplate($data['drawnTemplate'] ?? null),
     );
 
     if ($result) {

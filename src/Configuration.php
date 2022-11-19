@@ -32,7 +32,12 @@ class Configuration
             Emoji::createFromString($_ENV['WIN_EMOJI'] ?? ''),
             Emoji::createFromString($_ENV['SCORE_EMOJI'] ?? ''),
             Emoji::createFromString($_ENV['KICK_OFF_EMOJI'] ?? ''),
-            Emoji::createFromString($_ENV['DRAW_EMOJI'] ?? '')
+            Emoji::createFromString($_ENV['DRAW_EMOJI'] ?? ''),
+            $_ENV['KICK_OFF_TEMPLATE'] ?? null,
+            $_ENV['SCORE_TEMPLATE'] ?? null,
+            $_ENV['DISALLOWED_TEMPLATE'] ?? null,
+            $_ENV['WIN_TEMPLATE'] ?? null,
+            $_ENV['DRAW_TEMPLATE'] ?? null
         );
     }
 
@@ -43,7 +48,12 @@ class Configuration
         private readonly Emoji $win,
         private readonly Emoji $score,
         private readonly Emoji $kickOff,
-        private readonly Emoji $draw
+        private readonly Emoji $draw,
+        public readonly ?string $kickOffTemplate,
+        public readonly ?string $scoreTemplate,
+        public readonly ?string $disallowedTemplate,
+        public readonly ?string $winTemplate,
+        public readonly ?string $drawTemplate
     ) {
     }
 
@@ -82,6 +92,11 @@ class Configuration
             'score' => $this->score->toString(),
             'kickOff' => $this->kickOff->toString(),
             'draw' => $this->draw->toString(),
+            'kickOffTemplate' => $this->kickOffTemplate,
+            'scoreTemplate' => $this->scoreTemplate,
+            'disallowedTemplate' => $this->disallowedTemplate,
+            'winTemplate' => $this->winTemplate,
+            'drawTemplate' => $this->drawTemplate,
         ];
     }
 }
