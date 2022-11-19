@@ -28,6 +28,7 @@ class EmojiTest extends TestCase
             ['emoji123'],
             ['123'],
             ['123some-emoji'],
+            ['123some-emoji_wiTH-SoME-CapitAls__'],
         ];
     }
 
