@@ -154,11 +154,11 @@ SQL;
             Emoji::createFromString($data['score_emoji']),
             Emoji::createFromString($data['kickoff_emoji']),
             Emoji::createFromString($data['draw_emoji']),
-            $data['kickoff_template'],
-            $data['score_template'],
-            $data['disallowed_template'],
-            $data['win_template'],
-            $data['draw_template'],
+            $data['kickoff_template'] ?? null,
+            $data['score_template'] ?? null,
+            $data['disallowed_template'] ?? null,
+            $data['win_template'] ?? null,
+            $data['draw_template'] ?? null,
         );
     }
 }
