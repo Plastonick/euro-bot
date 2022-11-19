@@ -119,11 +119,11 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         Emoji::createFromString($data['score']),
         Emoji::createFromString($data['kickOff']),
         Emoji::createFromString($data['draw']),
-        $unwrapTemplate($data['kickoffTemplate']),
-        $unwrapTemplate($data['scoreTemplate']),
-        $unwrapTemplate($data['disallowedTemplate']),
-        $unwrapTemplate($data['wonTemplate']),
-        $unwrapTemplate($data['drawnTemplate']),
+        $unwrapTemplate($data['kickoffTemplate'] ?? null),
+        $unwrapTemplate($data['scoreTemplate'] ?? null),
+        $unwrapTemplate($data['disallowedTemplate'] ?? null),
+        $unwrapTemplate($data['wonTemplate'] ?? null),
+        $unwrapTemplate($data['drawnTemplate'] ?? null),
     );
 
     if ($result) {
