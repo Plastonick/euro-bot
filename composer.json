@@ -24,7 +24,8 @@
     }
   },
   "require-dev": {
-    "vimeo/psalm": "^4.12"
+    "vimeo/psalm": "^4.12",
+    "phpunit/phpunit": "^9.5"
   },
   "license": "MIT"
 }

@@ -5,6 +5,7 @@ namespace Plastonick\Euros;
 use function array_rand;
 use function explode;
 use function implode;
+use function preg_match;
 
 class Emoji
 {
@@ -29,11 +30,18 @@ class Emoji
 
         $key = array_rand($this->emoji);
 
-        if (!isset($this->emoji[$key])) {
+        $emojiString = $this->emoji[$key] ?? null;
+        if ($emojiString === null) {
             return null;
         }
 
-        return ":{$this->emoji[$key]}:";
+        $emojiString = trim($emojiString);
+        if (preg_match('/^[a-zA-Z\d\-_]*$/', $emojiString)) {
+            return ":{$emojiString}:";
+        } else {
+            return $emojiString;
+        }
+
     }
 
     public function toString(): string
