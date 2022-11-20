@@ -9,7 +9,7 @@ class Game
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $status,
+        public readonly ?string $status,
         public readonly DateTimeInterface $startTime,
         public readonly Team $homeTeam,
         public readonly Team $awayTeam,
