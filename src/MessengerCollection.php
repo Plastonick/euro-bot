@@ -101,13 +101,13 @@ class MessengerCollection
 
         $pool = new Pool(new Client(), $requests(), [
             'concurrency' => 10,
-            'fulfilled' => function (Response $response, int $index): void {
+            'fulfilled' => function (): void {
                 // do nothing
             },
-            'rejected' => function (RequestException $reason, int $index): void {
+            'rejected' => function ($reason, $index): void {
                 $this->logger->error(
                     'Failed to deliver message',
-                    ['message' => $reason->getMessage()]
+                    ['reason' => $reason]
                 );
             },
         ]);
