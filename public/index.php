@@ -124,6 +124,7 @@ $app->put('/configuration', function (Request $request, Response $response, arra
         $unwrapTemplate($data['disallowedTemplate'] ?? null),
         $unwrapTemplate($data['wonTemplate'] ?? null),
         $unwrapTemplate($data['drawnTemplate'] ?? null),
+        $data['delaySeconds'] ?? 0,
     );
 
     if ($result) {

@@ -37,7 +37,8 @@ class Configuration
             $_ENV['SCORE_TEMPLATE'] ?? null,
             $_ENV['DISALLOWED_TEMPLATE'] ?? null,
             $_ENV['WIN_TEMPLATE'] ?? null,
-            $_ENV['DRAW_TEMPLATE'] ?? null
+            $_ENV['DRAW_TEMPLATE'] ?? null,
+            (int) ($_ENV['DELAY_SECONDS'] ?? 0),
         );
     }
 
@@ -53,7 +54,8 @@ class Configuration
         public readonly ?string $scoreTemplate,
         public readonly ?string $disallowedTemplate,
         public readonly ?string $winTemplate,
-        public readonly ?string $drawTemplate
+        public readonly ?string $drawTemplate,
+        public readonly int $delaySeconds,
     ) {
     }
 
@@ -82,11 +84,6 @@ class Configuration
         return $this->draw->retrieveRandomEmoji();
     }
 
-    public function getDelaySeconds(): int
-    {
-        return 120;
-    }
-
     public function toArray(): array
     {
         return [
@@ -102,6 +99,7 @@ class Configuration
             'disallowedTemplate' => $this->disallowedTemplate,
             'winTemplate' => $this->winTemplate,
             'drawTemplate' => $this->drawTemplate,
+            'delaySeconds' => $this->delaySeconds,
         ];
     }
 }

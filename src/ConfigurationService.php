@@ -77,10 +77,11 @@ SQL;
         ?string $scoreTemplate,
         ?string $disallowedTemplate,
         ?string $winTemplate,
-        ?string $drawTemplate
+        ?string $drawTemplate,
+        int $delaySeconds
     ): bool {
         $insertQuery = <<<SQL
-INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emoji, draw_emoji, kickoff_emoji, last_updated, kickoff_template, score_template, disallowed_template, win_template, draw_template) VALUES (
+INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emoji, draw_emoji, kickoff_emoji, last_updated, kickoff_template, score_template, disallowed_template, win_template, draw_template, delay_seconds) VALUES (
     :webhookUrl,
     :service,
     :teamMap,
@@ -93,8 +94,9 @@ INSERT INTO configurations (webhook_url, service, team_map, win_emoji, score_emo
     :scoreTemplate,
     :disallowedTemplate,
     :winTemplate,
-    :drawTemplate
-) ON CONFLICT (webhook_url) DO UPDATE SET service = :service, team_map = :teamMap, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated, kickoff_template = :kickoffTemplate, score_template = :scoreTemplate, disallowed_template = :disallowedTemplate, win_template = :winTemplate, draw_template = :drawTemplate
+    :drawTemplate,
+    :delaySeconds
+) ON CONFLICT (webhook_url) DO UPDATE SET service = :service, team_map = :teamMap, win_emoji = :winEmoji, score_emoji = :scoreEmoji, draw_emoji = :drawEmoji, kickoff_emoji = :kickoffEmoji, last_updated = :lastUpdated, kickoff_template = :kickoffTemplate, score_template = :scoreTemplate, disallowed_template = :disallowedTemplate, win_template = :winTemplate, draw_template = :drawTemplate, delay_seconds = :delaySeconds
  ;
 SQL;
         $insertStatement = $this->connection->prepare($insertQuery);
@@ -113,6 +115,7 @@ SQL;
             'disallowedTemplate' => $disallowedTemplate,
             'winTemplate' => $winTemplate,
             'drawTemplate' => $drawTemplate,
+            'delaySeconds' => $delaySeconds,
         ]);
     }
 
@@ -159,6 +162,7 @@ SQL;
             $data['disallowed_template'] ?? null,
             $data['win_template'] ?? null,
             $data['draw_template'] ?? null,
+            $data['delay_seconds'] ?? 0,
         );
     }
 }

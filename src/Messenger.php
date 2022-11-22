@@ -142,7 +142,7 @@ class Messenger implements Messenging
 
     private function buildDelayUntil(): DateTimeInterface
     {
-        $timestamp = time() + $this->config->getDelaySeconds();
+        $timestamp = time() + $this->config->delaySeconds;
 
         return DateTime::createFromFormat('U', (string) $timestamp);
     }

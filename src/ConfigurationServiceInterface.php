@@ -34,7 +34,8 @@ interface ConfigurationServiceInterface
         ?string $scoreTemplate,
         ?string $disallowedTemplate,
         ?string $winTemplate,
-        ?string $drawTemplate
+        ?string $drawTemplate,
+        int $delaySeconds
     ): bool;
 
     public function persistTestWebhook(string $url, Service $service): bool;
