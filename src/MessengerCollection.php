@@ -4,10 +4,8 @@ namespace Plastonick\Euros;
 
 use Generator;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use function count;
 
@@ -18,7 +16,7 @@ class MessengerCollection
      */
     private array $messengers = [];
 
-    public function __construct(private readonly LoggerInterface $logger)
+    public function __construct(public readonly MessageQueue $queue, private readonly LoggerInterface $logger)
     {
     }
 
@@ -45,42 +43,30 @@ class MessengerCollection
 
     public function matchStarting(Game $match): void
     {
-        $promises = [];
-        foreach ($this->messengers as $messager) {
-            $promises[] = $messager->matchStarting($match);
+        foreach ($this->messengers as $messenger) {
+            $this->queue->add($messenger->matchStarting($match));
         }
-
-        $this->dispatchPromises($promises);
     }
 
     public function matchComplete(Game $match): void
     {
-        $promises = [];
-        foreach ($this->messengers as $messager) {
-            $promises[] = $messager->matchComplete($match);
+        foreach ($this->messengers as $messenger) {
+            $this->queue->add($messenger->matchComplete($match));
         }
-
-        $this->dispatchPromises($promises);
     }
 
     public function goalScored(Team $scoringTeam, Game $match): void
     {
-        $promises = [];
-        foreach ($this->messengers as $messager) {
-            $promises[] = $messager->goalScored($scoringTeam, $match);
+        foreach ($this->messengers as $messenger) {
+            $this->queue->add($messenger->goalScored($scoringTeam, $match));
         }
-
-        $this->dispatchPromises($promises);
     }
 
     public function goalDisallowed(Game $match): void
     {
-        $promises = [];
-        foreach ($this->messengers as $messager) {
-            $promises[] = $messager->goalDisallowed($match);
+        foreach ($this->messengers as $messenger) {
+            $this->queue->add($messenger->goalDisallowed($match));
         }
-
-        $this->dispatchPromises($promises);
     }
 
     /**

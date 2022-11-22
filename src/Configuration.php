@@ -82,6 +82,11 @@ class Configuration
         return $this->draw->retrieveRandomEmoji();
     }
 
+    public function getDelaySeconds(): int
+    {
+        return 120;
+    }
+
     public function toArray(): array
     {
         return [

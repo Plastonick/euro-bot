@@ -3,12 +3,13 @@
 namespace Plastonick\Euros;
 
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class Loop
 {
     public function __construct(
-        private StateBuilder $stateBuilder,
-        private MessengerCollection $messager,
+        private readonly StateBuilder $stateBuilder,
+        private readonly MessengerCollection $messager,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -18,6 +19,36 @@ class Loop
         $this->logger->info('Updating match data');
 
         $updatedState = $this->stateBuilder->buildNewState($state->getTeams());
+        $this->queueMessages($updatedState, $state);
+        $this->dispatchQueuedMessages();
+
+        return $updatedState;
+    }
+
+    /**
+     * @return void
+     */
+    private function dispatchQueuedMessages(): void
+    {
+        $messages = $this->messager->queue->retrieveReady();
+        foreach ($messages as $message) {
+            try {
+                $this->logger->info('Sending message', ['content' => $message->content]);
+                $message->notificationService->send($message->content)->wait();
+            } catch (Throwable $throwable) {
+                $this->logger->error('Failed waiting on promise', ['throwable' => $throwable]);
+            }
+        }
+    }
+
+    /**
+     * @param State $updatedState
+     * @param State $state
+     *
+     * @return void
+     */
+    private function queueMessages(State $updatedState, State $state): void
+    {
         $updatedMatches = $updatedState->getMatches();
 
         foreach ($state->getMatches() as $matchId => $originalMatch) {
@@ -41,7 +72,8 @@ class Loop
                 $this->messager->goalScored($updatedMatch->homeTeam, $updatedMatch);
             }
 
-            if ($updatedMatch->homeScore < $originalMatch->homeScore
+            if (
+                $updatedMatch->homeScore < $originalMatch->homeScore
                 || $updatedMatch->awayScore < $originalMatch->awayScore
             ) {
                 $this->logger->debug('Generating goal disallowed event');
@@ -59,7 +91,5 @@ class Loop
                 $this->messager->matchComplete($updatedMatch);
             }
         }
-
-        return $updatedState;
     }
 }

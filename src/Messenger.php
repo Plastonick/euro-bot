@@ -2,14 +2,16 @@
 
 namespace Plastonick\Euros;
 
+use DateTime;
+use DateTimeInterface;
 use GuzzleHttp\Client;
-use GuzzleHttp\Promise\PromiseInterface;
 use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\NotificationService;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 use function preg_replace;
 use function str_starts_with;
 use function strtr;
+use function time;
 
 class Messenger implements Messenging
 {
@@ -19,7 +21,7 @@ class Messenger implements Messenging
     ) {
     }
 
-    public function matchStarting(Game $match): PromiseInterface
+    public function matchStarting(Game $match): Message
     {
         $template = $this->config->kickOffTemplate ?? '{homeName} {homeOwner} {homeFlag} vs. {awayFlag} {awayName} {awayOwner} has kicked off! {kickOffEmoji}';
         $replacements = [
@@ -32,10 +34,14 @@ class Messenger implements Messenging
             '{kickOffEmoji}' => $this->config->getKickOffEmoji()
         ];
 
-        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+        return new Message(
+            $this->getNotificationService(),
+            $this->buildMessage($template, $replacements),
+            $this->buildDelayUntil()
+        );
     }
 
-    public function matchComplete(Game $match): PromiseInterface
+    public function matchComplete(Game $match): Message
     {
         return match ($match->winner) {
             'HOME_TEAM' => $this->matchWon($match->homeTeam, $match->awayTeam, $match),
@@ -44,7 +50,7 @@ class Messenger implements Messenging
         };
     }
 
-    public function goalScored(Team $scoringTeam, Game $match): PromiseInterface
+    public function goalScored(Team $scoringTeam, Game $match): Message
     {
         $template = $this->config->scoreTemplate ?? '{scoringTeam} score! {scoreEmoji} — {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
@@ -56,10 +62,14 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+        return new Message(
+            $this->getNotificationService(),
+            $this->buildMessage($template, $replacements),
+            $this->buildDelayUntil()
+        );
     }
 
-    public function goalDisallowed(Game $match): PromiseInterface
+    public function goalDisallowed(Game $match): Message
     {
         $template = $this->config->disallowedTemplate ?? 'NO GOAL! {homeFlag} {homeScore} : {awayScore} {awayFlag}';
         $replacements = [
@@ -70,10 +80,14 @@ class Messenger implements Messenging
             '{scoreEmoji}' => $this->config->getScoreEmoji()
         ];
 
-        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+        return new Message(
+            $this->getNotificationService(),
+            $this->buildMessage($template, $replacements),
+            $this->buildDelayUntil()
+        );
     }
 
-    private function matchWon(Team $winner, Team $loser, Game $game): PromiseInterface
+    private function matchWon(Team $winner, Team $loser, Game $game): Message
     {
         $template = $this->config->winTemplate ?? '{winnerName} {winnerFlag} {winnerScore} : {loserScore} {loserFlag} {loserName}! Congratulations {winnerName} {winEmoji}';
         $replacements = [
@@ -86,10 +100,14 @@ class Messenger implements Messenging
             '{winEmoji}' => $this->config->getWinEmoji(),
         ];
 
-        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+        return new Message(
+            $this->getNotificationService(),
+            $this->buildMessage($template, $replacements),
+            $this->buildDelayUntil()
+        );
     }
 
-    private function matchDrawn(Game $game): PromiseInterface
+    private function matchDrawn(Game $game): Message
     {
         $template = $this->config->drawTemplate ?? '{homeName} {homeFlag} {homeScore} : {awayScore} {awayFlag} {awayName}! It\'s a draw! {drawEmoji}';
         $replacements = [
@@ -102,7 +120,11 @@ class Messenger implements Messenging
             '{drawEmoji}' => $this->config->getDrawEmoji(),
         ];
 
-        return $this->getNotificationService()->send($this->buildMessage($template, $replacements));
+        return new Message(
+            $this->getNotificationService(),
+            $this->buildMessage($template, $replacements),
+            $this->buildDelayUntil()
+        );
     }
 
     private function buildMessage(string $template, array $replacements): string
@@ -116,6 +138,13 @@ class Messenger implements Messenging
             Service::SLACK => new SlackIncomingWebhook($this->config->webHookUrl, $this->client),
             Service::DISCORD => new DiscordIncomingWebhook($this->config->webHookUrl, $this->client)
         };
+    }
+
+    private function buildDelayUntil(): DateTimeInterface
+    {
+        $timestamp = time() + $this->config->getDelaySeconds();
+
+        return DateTime::createFromFormat('U', (string) $timestamp);
     }
 
     private function buildName(?string $owner): string

@@ -60,7 +60,8 @@ $webhookClient = new Client(
     ]
 );
 
-$messengerCollection = new MessengerCollection($logger);
+$queue = new \Plastonick\Euros\MessageQueue();
+$messengerCollection = new MessengerCollection($queue, $logger);
 
 if ($_ENV['DB_HOST']) {
     $connection = new \PDO(
