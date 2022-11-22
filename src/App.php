@@ -5,7 +5,6 @@ use Monolog\Logger;
 use Plastonick\Euros\Configuration;
 use Plastonick\Euros\ConfigurationService;
 use Plastonick\Euros\ConfigurationServiceInterface;
-use Plastonick\Euros\CountryCode;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
@@ -40,14 +39,12 @@ $teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
 
 $teams = [];
 foreach ($teamsArray as $teamData) {
-    $country = CountryCode::from($teamData['tla']);
-
     $id = $teamData['id'];
     $name = $teamData['name'];
-    $team = new Team($id, $name, $country, $country->getFlagCode());
+    $team = new Team($id, $name, $teamData['tla']);
     $teams[$id] = $team;
 
-    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'tla' => $country->name]);
+    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'tla' => $team->tla]);
 }
 
 $stateBuilder = new StateBuilder($apiClient, $logger);

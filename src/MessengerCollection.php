@@ -104,7 +104,7 @@ class MessengerCollection
             'fulfilled' => function (): void {
                 // do nothing
             },
-            'rejected' => function ($reason, $index): void {
+            'rejected' => function (mixed $reason, int $index): void {
                 $this->logger->error(
                     'Failed to deliver message',
                     ['reason' => $reason]

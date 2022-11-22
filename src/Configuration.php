@@ -59,7 +59,7 @@ class Configuration
 
     public function getTeamOwner(Team $team): ?string
     {
-        return $this->owners[$team->countryCode->name] ?? null;
+        return $this->owners[$team->tla] ?? null;
     }
 
     public function getWinEmoji(): ?string
