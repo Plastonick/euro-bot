@@ -37,7 +37,8 @@ class StaticConfigurationService implements ConfigurationServiceInterface
         ?string $scoreTemplate,
         ?string $disallowedTemplate,
         ?string $winTemplate,
-        ?string $drawTemplate
+        ?string $drawTemplate,
+        int $delaySeconds
     ): bool {
         return true;
     }

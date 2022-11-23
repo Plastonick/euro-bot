@@ -9,7 +9,7 @@ class Loop
 {
     public function __construct(
         private readonly StateBuilder $stateBuilder,
-        private readonly MessengerCollection $messager,
+        private readonly MessengerCollection $messengerCollection,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -20,7 +20,6 @@ class Loop
 
         $updatedState = $this->stateBuilder->buildNewState($state->getTeams());
         $this->queueMessages($updatedState, $state);
-        $this->dispatchQueuedMessages();
 
         return $updatedState;
     }
@@ -28,9 +27,9 @@ class Loop
     /**
      * @return void
      */
-    private function dispatchQueuedMessages(): void
+    public function dispatchQueuedMessages(): void
     {
-        $messages = $this->messager->queue->retrieveReady();
+        $messages = $this->messengerCollection->queue->retrieveReady();
         foreach ($messages as $message) {
             try {
                 $this->logger->info('Sending message', ['content' => $message->content]);
@@ -63,13 +62,13 @@ class Loop
             // Determine if the match has started since our last status
             if ($originalMatch->status === 'SCHEDULED' && $updatedMatch->status !== 'SCHEDULED') {
                 $this->logger->debug('Generating match start event');
-                $this->messager->matchStarting($updatedMatch);
+                $this->messengerCollection->matchStarting($updatedMatch);
             }
 
             // Check for goals scored
             if ($updatedMatch->homeScore > $originalMatch->homeScore) {
                 $this->logger->debug('Generating home team goal scored event');
-                $this->messager->goalScored($updatedMatch->homeTeam, $updatedMatch);
+                $this->messengerCollection->goalScored($updatedMatch->homeTeam, $updatedMatch);
             }
 
             if (
@@ -77,18 +76,18 @@ class Loop
                 || $updatedMatch->awayScore < $originalMatch->awayScore
             ) {
                 $this->logger->debug('Generating goal disallowed event');
-                $this->messager->goalDisallowed($updatedMatch);
+                $this->messengerCollection->goalDisallowed($updatedMatch);
             }
 
             if ($updatedMatch->awayScore > $originalMatch->awayScore) {
                 $this->logger->debug('Generating away team goal scored event');
-                $this->messager->goalScored($updatedMatch->awayTeam, $updatedMatch);
+                $this->messengerCollection->goalScored($updatedMatch->awayTeam, $updatedMatch);
             }
 
             // Determine if the match has finished
             if ($originalMatch->status !== 'FINISHED' && $updatedMatch->status === 'FINISHED') {
                 $this->logger->debug('Generating match completion event');
-                $this->messager->matchComplete($updatedMatch);
+                $this->messengerCollection->matchComplete($updatedMatch);
             }
         }
     }

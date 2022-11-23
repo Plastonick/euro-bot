@@ -110,6 +110,8 @@ while (true) {
         $logger->error('Error occurred sending test events', ['throwable' => $e]);
     }
 
+    $loop->dispatchQueuedMessages();
+
     if (time() < $sleepUntil) {
         sleep(1);
         continue;
