@@ -7,6 +7,7 @@ class Flag
     public static function from(string $tla): string
     {
         return match ($tla) {
+            'ALB' => '🇦🇱',
             'ARG' => '🇦🇷',
             'AUS' => '🇦🇺',
             'AUT' => '🇦🇹',
@@ -23,6 +24,7 @@ class Flag
             'ESP' => '🇪🇸',
             'FIN' => '🇫🇮',
             'FRA' => '🇫🇷',
+            'GEO' => '🇬🇪',
             'GER' => '🇩🇪',
             'GHA' => '🇬🇭',
             'HUN' => '🇭🇺',
@@ -37,12 +39,14 @@ class Flag
             'POL' => '🇵🇱',
             'POR' => '🇵🇹',
             'QAT' => '🇶🇦',
+            'ROU' => '🇷🇴',
             'RUS' => '🇷🇺',
             'SCO' => '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
             'SEN' => '🇸🇳',
             'SRB' => '🇷🇸',
             'SUI' => '🇨🇭',
             'SVK' => '🇸🇰',
+            'SVN' => '🇸🇮',
             'SWE' => '🇸🇪',
             'TUN' => '🇹🇳',
             'TUR' => '🇹🇷',
