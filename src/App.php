@@ -25,14 +25,7 @@ $dotenv->safeLoad();
 
 $competitionId = $_ENV['COMPETITION_ID'];
 
-$apiClient = new \GuzzleHttp\Client(
-    [
-        'base_uri' => $_ENV['FOOTBALL_API_URI'],
-        'timeout' => 0,
-        'allow_redirects' => false,
-        'headers' => ['X-Auth-Token' => $_ENV['API_KEY']],
-    ]
-);
+$apiClient = \Plastonick\Euros\ApiClientFactory::createFootballApiClient();
 
 $teamsJson = $apiClient->get("competitions/{$competitionId}/teams");
 $teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
@@ -99,8 +92,8 @@ while (true) {
             };
 
             $link = match ($service) {
-                Service::SLACK => '<https://sweepstake.services|World Cup Sweepstakes Announcer>',
-                default => '[World Cup Sweepstakes Announcer](https://sweepstake.services)',
+                Service::SLACK => '<https://sweepstakes.plastonick.me|Tournament Sweepstakes Announcer>',
+                default => '[Tournament Sweepstakes Announcer](https://sweepstakes.plastonick.me)',
             };
 
             $logger->info('Testing webhook', ['service' => $service]);

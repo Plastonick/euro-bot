@@ -37,3 +37,8 @@ docker run -d --rm \
 ### Frontend
 
 See [Sweepstakes Frontend](https://github.com/Plastonick/Sweepstakes-Frontend) for the frontend code to host this.
+
+1. Setup a postgres database 
+2. Update the .env variables 
+3. Start a PHP server: `php -S 0.0.0.0:8090 public/index.php`
+4. Start the frontend server
