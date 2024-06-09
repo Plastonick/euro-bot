@@ -12,7 +12,7 @@ This bot then posts to Slack or Discord at the start or end of a match, tagging 
 
 ## Usage (Easy)
 
-You can either head over to https://sweepstake.services and follow instructions from there, or continue reading to host the bot yourself.
+You can either head over to https://sweepstakes.plastonick.me and follow instructions from there, or continue reading to host the bot yourself.
 
 ## Usage (Developer)
 
