@@ -2,6 +2,8 @@
 
 namespace Plastonick\Euros;
 
+use stdClass;
+
 use function strtoupper;
 use function substr;
 
@@ -89,7 +91,7 @@ class Configuration
         return [
             'webhook' => $this->webHookUrl,
             'service' => $this->service->value,
-            'owners' => $this->owners,
+            'owners' => $this->owners ?: new stdClass(),
             'win' => $this->win->toString(),
             'score' => $this->score->toString(),
             'kickOff' => $this->kickOff->toString(),
