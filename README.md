@@ -16,11 +16,11 @@ You can either head over to https://sweepstakes.plastonick.me and follow instruc
 
 ## Usage (Developer)
 
-You'll need to generate an api token at football-data.org, and an incoming webhook for your Slack or Discord channel.
+You'll need to generate an API token at football-data.org, and an incoming webhook for your Slack or Discord channel.
 
 ### Native
 
-Clone this repository, copy the `.env.example` to `.env` and input the relevant values for your use case. 
+Clone this repository, copy the `.env.example` to `.env` and input the relevant values for your use case. The default example is configured for the football-data.org v4 API and World Cup competition `2000`.
 
 Run by executing `src/App.php`, the process will continue indefinitely.
 

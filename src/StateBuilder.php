@@ -35,6 +35,7 @@ class StateBuilder
         $homeTeamId = $matchData['homeTeam']['id'];
         $awayTeamId = $matchData['awayTeam']['id'];
         $matchId = $matchData['id'];
+        $fullTimeScore = $matchData['score']['fullTime'] ?? [];
 
         try {
             $startTime = new DateTime($matchData['utcDate']);
@@ -60,8 +61,8 @@ class StateBuilder
             $startTime,
             $homeTeam,
             $awayTeam,
-            $matchData['score']['fullTime']['homeTeam'],
-            $matchData['score']['fullTime']['awayTeam'],
+            $fullTimeScore['homeTeam'] ?? $fullTimeScore['home'] ?? null,
+            $fullTimeScore['awayTeam'] ?? $fullTimeScore['away'] ?? null,
             $matchData['score']['winner'],
         );
     }
