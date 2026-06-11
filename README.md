@@ -1,44 +1,36 @@
 # Sweepstakes Announcer
 
-Bot to announce football events and tag the relevant team "owners" to either Slack or Discord using "Incoming Webhooks".
+Monorepo for the Sweepstakes Announcer backend and Svelte frontend.
 
-This bot is useful for keeping people involved in World Cup or other major football tournament sweepstakes, each country is assigned to a tag or full name. Tags are detected by checking for a preceding "@".
+## Layout
 
-This bot then posts to Slack or Discord at the start or end of a match, tagging the relevant people involved in the match as well as the result of that match.
+- `backend/` contains the PHP bot, API, migrations, and Dockerfile.
+- `frontend/` contains the Svelte/Vite configuration UI.
+- `docker-compose.yml` starts Postgres, runs migrations, starts the backend API/bot, and serves the frontend.
 
-### Example messages
+## Local Development
 
-![example image](example.png "Example")
+Create the backend environment file:
 
-## Usage (Easy)
-
-You can either head over to https://sweepstakes.plastonick.me and follow instructions from there, or continue reading to host the bot yourself.
-
-## Usage (Developer)
-
-You'll need to generate an API token at football-data.org, and an incoming webhook for your Slack or Discord channel.
-
-### Native
-
-Clone this repository, copy the `.env.example` to `.env` and input the relevant values for your use case. The default example is configured for the football-data.org v4 API and World Cup competition `2000`.
-
-Run by executing `src/App.php`, the process will continue indefinitely.
-
-### Docker
-
-Generate your `.env` file from the `.env.example` in this repository, then run it using the command below, inserting the path to your `.env` file (if you're in the same directory, you can use `` `pwd`/.env``)
-
-```
-docker run -d --rm \
-    -v <local/path/to/.env>:/app/.env \
-    davidpugh/euro-bot:latest
+```bash
+cp backend/.env.example backend/.env
 ```
 
-### Frontend
+Set at least `API_KEY` in `backend/.env`. Compose supplies the local database connection values automatically.
 
-See [Sweepstakes Frontend](https://github.com/Plastonick/Sweepstakes-Frontend) for the frontend code to host this.
+Start everything from the repository root:
 
-1. Setup a postgres database 
-2. Update the .env variables 
-3. Start a PHP server: `php -S 0.0.0.0:8090 public/index.php`
-4. Start the frontend server
+```bash
+make dev
+```
+
+The frontend runs at http://127.0.0.1:5173 and talks to the backend API at http://127.0.0.1:8090.
+
+Useful commands:
+
+```bash
+make up
+make logs
+make down
+make migrate
+```

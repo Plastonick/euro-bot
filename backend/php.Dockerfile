@@ -8,9 +8,13 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress
 
 FROM php:8.2
 
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo pdo_pgsql && rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 COPY --from=vendor /app/vendor /app/vendor
+
+EXPOSE 80
 
 ENTRYPOINT php /app/entrypoint.php
