@@ -69,7 +69,7 @@ $app->get('/teams', function (Request $request, Response $response, array $args)
             array_values($footballData->getTeams($competitionId))
         );
     } catch (Throwable $e) {
-        $response->getBody()->write((string) new ApiError('Failed to fetch teams'));
+        $response->getBody()->write((string) new ApiError('Failed to fetch teams: ' . $e->getMessage()));
 
         return $response->withStatus(502);
     }
