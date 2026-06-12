@@ -5,13 +5,13 @@ use Monolog\Logger;
 use Plastonick\Euros\Configuration;
 use Plastonick\Euros\ConfigurationService;
 use Plastonick\Euros\ConfigurationServiceInterface;
+use Plastonick\Euros\FootballData\FootballDataProviderFactory;
 use Plastonick\Euros\Loop;
 use Plastonick\Euros\Messenger;
 use Plastonick\Euros\MessengerCollection;
 use Plastonick\Euros\Service;
 use Plastonick\Euros\StaticConfigurationService;
 use Plastonick\Euros\StateBuilder;
-use Plastonick\Euros\Team;
 use Plastonick\Euros\Transport\DiscordIncomingWebhook;
 use Plastonick\Euros\Transport\SlackIncomingWebhook;
 
@@ -25,22 +25,14 @@ $dotenv->safeLoad();
 
 $competitionId = $_ENV['COMPETITION_ID'];
 
-$apiClient = \Plastonick\Euros\ApiClientFactory::createFootballApiClient();
+$footballData = FootballDataProviderFactory::createFromEnv($_ENV, $logger);
 
-$teamsJson = $apiClient->get("competitions/{$competitionId}/teams");
-$teamsArray = json_decode($teamsJson->getBody()->getContents(), true)['teams'];
-
-$teams = [];
-foreach ($teamsArray as $teamData) {
-    $id = $teamData['id'];
-    $name = $teamData['name'];
-    $team = new Team($id, $name, $teamData['tla']);
-    $teams[$id] = $team;
-
-    $logger->info('Registered team', ['id' => $id, 'name' => $name, 'tla' => $team->tla]);
+$teams = $footballData->getTeams($competitionId);
+foreach ($teams as $team) {
+    $logger->info('Registered team', ['id' => $team->id, 'name' => $team->name, 'tla' => $team->tla]);
 }
 
-$stateBuilder = new StateBuilder($apiClient, $logger);
+$stateBuilder = new StateBuilder($footballData, $logger, $competitionId);
 $state = $stateBuilder->buildNewState($teams);
 
 $webhookClient = new Client(
