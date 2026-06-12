@@ -7,28 +7,22 @@ use Plastonick\Euros\FootballData\Espn\EspnTeamMapper;
 
 class EspnTeamMapperTest extends TestCase
 {
-    public function testMapsTeamsFromScoreboardEventsById(): void
+    public function testMapsTeamsFromTeamsPayloadById(): void
     {
         $fixture = new EspnTeamMapper();
 
-        $teams = $fixture->mapFromEvents(
+        $teams = $fixture->mapFromTeamsPayload(
             [
-                [
-                    'competitions' => [
-                        [
-                            'competitors' => [
-                                [
-                                    'team' => [
-                                        'id' => '203',
-                                        'displayName' => 'Mexico',
-                                        'abbreviation' => 'MEX',
+                'sports' => [
+                    [
+                        'leagues' => [
+                            [
+                                'teams' => [
+                                    [
+                                        'team' => ['id' => '203', 'displayName' => 'Mexico', 'abbreviation' => 'MEX'],
                                     ],
-                                ],
-                                [
-                                    'team' => [
-                                        'id' => '467',
-                                        'displayName' => 'South Africa',
-                                        'abbreviation' => 'RSA',
+                                    [
+                                        'team' => ['id' => '467', 'displayName' => 'South Africa', 'abbreviation' => 'RSA'],
                                     ],
                                 ],
                             ],

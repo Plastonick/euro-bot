@@ -20,6 +20,24 @@ final class EspnTeamMapper
     /**
      * @return Team[] keyed by ESPN team id
      */
+    public function mapFromTeamsPayload(array $payload): array
+    {
+        $leagues = $payload['sports'][0]['leagues'] ?? [];
+
+        $teams = [];
+        foreach ($leagues as $league) {
+            foreach ($league['teams'] ?? [] as $teamData) {
+                $team = $this->map($teamData);
+                $teams[$team->id] = $team;
+            }
+        }
+
+        return $teams;
+    }
+
+    /**
+     * @return Team[] keyed by ESPN team id
+     */
     public function mapFromEvents(array $events): array
     {
         $teams = [];

@@ -14,14 +14,14 @@ use Psr\Log\NullLogger;
 
 class EspnScoreboardProviderTest extends TestCase
 {
-    public function testUsesScoreboardPayloadForTeamsAndMatches(): void
+    public function testUsesTeamsEndpointForTeamsAndScoreboardEndpointForMatches(): void
     {
         $client = new class implements ClientInterface {
-            public int $requests = 0;
+            public array $requests = [];
 
             public function send(RequestInterface $request, array $options = []): ResponseInterface
             {
-                return $this->response();
+                return $this->response((string) $request->getUri());
             }
 
             public function sendAsync(RequestInterface $request, array $options = []): \GuzzleHttp\Promise\PromiseInterface
@@ -31,9 +31,9 @@ class EspnScoreboardProviderTest extends TestCase
 
             public function request($method, $uri, array $options = []): ResponseInterface
             {
-                $this->requests++;
+                $this->requests[] = $uri;
 
-                return $this->response();
+                return $this->response($uri);
             }
 
             public function requestAsync($method, $uri, array $options = []): \GuzzleHttp\Promise\PromiseInterface
@@ -46,60 +46,95 @@ class EspnScoreboardProviderTest extends TestCase
                 return null;
             }
 
-            private function response(): ResponseInterface
+            private function response(string $uri): ResponseInterface
             {
-                return new Response(
-                    200,
-                    [],
-                    json_encode(
+                return new Response(200, [], json_encode(match ($uri) {
+                    '/teams' => $this->teamsPayload(),
+                    '/scoreboard' => $this->scoreboardPayload(),
+                    default => throw new \RuntimeException("Unexpected URI: {$uri}"),
+                }));
+            }
+
+            private function teamsPayload(): array
+            {
+                return [
+                    'sports' => [
                         [
-                            'events' => [
+                            'leagues' => [
                                 [
-                                    'id' => '760415',
-                                    'date' => '2026-06-11T19:00Z',
-                                    'competitions' => [
+                                    'teams' => [
                                         [
-                                            'startDate' => '2026-06-11T19:00Z',
-                                            'status' => [
-                                                'type' => [
-                                                    'state' => 'pre',
-                                                    'completed' => false,
-                                                ],
+                                            'team' => [
+                                                'id' => '203',
+                                                'displayName' => 'Mexico',
+                                                'abbreviation' => 'MEX',
                                             ],
-                                            'competitors' => [
-                                                [
-                                                    'homeAway' => 'home',
-                                                    'score' => '0',
-                                                    'team' => [
-                                                        'id' => '203',
-                                                        'displayName' => 'Mexico',
-                                                        'abbreviation' => 'MEX',
-                                                    ],
-                                                ],
-                                                [
-                                                    'homeAway' => 'away',
-                                                    'score' => '0',
-                                                    'team' => [
-                                                        'id' => '467',
-                                                        'displayName' => 'South Africa',
-                                                        'abbreviation' => 'RSA',
-                                                    ],
-                                                ],
+                                        ],
+                                        [
+                                            'team' => [
+                                                'id' => '467',
+                                                'displayName' => 'South Africa',
+                                                'abbreviation' => 'RSA',
                                             ],
                                         ],
                                     ],
                                 ],
                             ],
-                        ]
-                    )
-                );
+                        ],
+                    ],
+                ];
+            }
+
+            private function scoreboardPayload(): array
+            {
+                return [
+                    'events' => [
+                        [
+                            'id' => '760415',
+                            'date' => '2026-06-11T19:00Z',
+                            'competitions' => [
+                                [
+                                    'startDate' => '2026-06-11T19:00Z',
+                                    'status' => [
+                                        'type' => [
+                                            'state' => 'pre',
+                                            'completed' => false,
+                                        ],
+                                    ],
+                                    'competitors' => [
+                                        [
+                                            'homeAway' => 'home',
+                                            'score' => '0',
+                                            'team' => [
+                                                'id' => '203',
+                                                'displayName' => 'Mexico',
+                                                'abbreviation' => 'MEX',
+                                            ],
+                                        ],
+                                        [
+                                            'homeAway' => 'away',
+                                            'score' => '0',
+                                            'team' => [
+                                                'id' => '467',
+                                                'displayName' => 'South Africa',
+                                                'abbreviation' => 'RSA',
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
             }
         };
 
         $fixture = new EspnScoreboardProvider(
             $client,
             new EspnTeamMapper(),
-            new EspnMatchMapper(new NullLogger())
+            new EspnMatchMapper(new NullLogger()),
+            '/scoreboard',
+            '/teams'
         );
 
         $teams = $fixture->getTeams('ignored');
@@ -108,6 +143,6 @@ class EspnScoreboardProviderTest extends TestCase
         self::assertCount(2, $teams);
         self::assertCount(1, $matches);
         self::assertSame('SCHEDULED', $matches['760415']->status);
-        self::assertSame(2, $client->requests);
+        self::assertSame(['/teams', '/scoreboard'], $client->requests);
     }
 }

@@ -12,13 +12,17 @@ final class EspnScoreboardProvider implements FootballDataProvider
         private readonly ClientInterface $client,
         private readonly EspnTeamMapper $teamMapper,
         private readonly EspnMatchMapper $matchMapper,
-        private readonly string $scoreboardPath = '/apis/site/v2/sports/soccer/fifa.world/scoreboard'
+        private readonly string $scoreboardPath = '/apis/site/v2/sports/soccer/fifa.world/scoreboard',
+        private readonly string $teamsPath = '/apis/site/v2/sports/soccer/fifa.world/teams'
     ) {
     }
 
     public function getTeams(string $competitionId): array
     {
-        return $this->teamMapper->mapFromEvents($this->getEvents());
+        $response = $this->client->request('GET', $this->teamsPath);
+        $payload = json_decode($response->getBody()->getContents(), true);
+
+        return $this->teamMapper->mapFromTeamsPayload($payload);
     }
 
     public function getMatches(string $competitionId, array $teams): array

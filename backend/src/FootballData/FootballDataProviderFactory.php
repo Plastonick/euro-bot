@@ -13,7 +13,7 @@ final class FootballDataProviderFactory
     {
         return match ($env['FOOTBALL_DATA_PROVIDER'] ?? 'football-data.org') {
             'football-data.org' => FootballDataOrgProviderFactory::createFromEnv($env, $logger),
-            'espn' => EspnProviderFactory::createFromEnv($env, $logger),
+            'espn' => EspnProviderFactory::create($logger),
             default => throw new RuntimeException('Unsupported football data provider'),
         };
     }
