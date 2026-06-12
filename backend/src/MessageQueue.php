@@ -2,10 +2,16 @@
 
 namespace Plastonick\Euros;
 
+use Psr\Log\LoggerInterface;
+
 use function array_shift;
 
-class MessageQueue
+final class MessageQueue
 {
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
+
     /**
      * @var Message[]
      */
@@ -13,6 +19,11 @@ class MessageQueue
 
     public function add(Message $message): void
     {
+        $this->logger->debug(
+            'Queueing message',
+            ['message' => $message->content, 'sendAt' => $message->sendAt->format(DATE_ATOM)]
+        );
+
         $this->cache[] = $message;
     }
 

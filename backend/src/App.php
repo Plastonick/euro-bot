@@ -45,7 +45,7 @@ $webhookClient = new Client(
     ]
 );
 
-$queue = new \Plastonick\Euros\MessageQueue();
+$queue = new \Plastonick\Euros\MessageQueue($logger);
 $messengerCollection = new MessengerCollection($queue, $logger);
 
 if ($_ENV['DB_HOST']) {

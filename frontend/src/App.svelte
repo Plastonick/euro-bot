@@ -2,8 +2,26 @@
     import Github from './lib/Github.svelte'
     import Help from './lib/Help.svelte'
     import axios from 'axios'
+    import { onMount } from 'svelte'
 
     const sweepstakesApi = import.meta.env.VITE_SWEEPSTAKES_API
+    type Team = {
+        id: number,
+        name: string,
+        tla: string,
+        flag: string
+    }
+    type Feedback = { type: string, message: string }
+    type FormValues = {
+        webhook: string,
+        service: string,
+        owners: Record<string, string>,
+        win: string,
+        score: string,
+        kickOff: string,
+        draw: string,
+        delaySeconds: number
+    }
 
     const fetchAndHydrateConfiguration = async function () {
         if (!formValues.webhook) {
@@ -66,7 +84,7 @@
             return
         }
 
-        await axios.put(`${sweepstakesApi}/configuration`, formValues)
+        await axios.put(`${sweepstakesApi}/configuration`, buildConfigurationPayload())
             .then((result) => {
                 persistFeedback = {type: 'success', message: result.data.message}
             })
@@ -89,7 +107,36 @@
             })
     }
 
-    const formValues = {
+    const buildConfigurationPayload = function (): FormValues {
+        const currentOwners = teams.reduce((owners, team) => {
+            owners[team.tla] = formValues.owners[team.tla] ?? ''
+            return owners
+        }, {} as Record<string, string>)
+
+        return {
+            ...formValues,
+            owners: currentOwners
+        }
+    }
+
+    const fetchTeams = async function () {
+        teamsLoading = true
+        teamsFeedback = null
+
+        await axios.get(`${sweepstakesApi}/teams`)
+            .then((result) => {
+                teams = result.data.teams
+            })
+            .catch((result) => {
+                const message = result.response?.data?.message ?? 'Could not retrieve teams'
+                teamsFeedback = {type: 'error', message}
+            })
+            .finally(() => {
+                teamsLoading = false
+            })
+    }
+
+    const formValues: FormValues = {
         webhook: '',
         service: '',
         owners: {},
@@ -100,35 +147,15 @@
         delaySeconds: 120
     }
 
-    // TODO read the team list from the backend
-    const teams = {
-      ALB: 'Albania',
-      AUT: 'Austria',
-      BEL: 'Belgium',
-      CRO: 'Croatia',
-      CZE: 'Czechia',
-      DEN: 'Denmark',
-      ENG: 'England',
-      ESP: 'Spain',
-      FRA: 'France',
-      GEO: 'Georgia',
-      GER: 'Germany',
-      HUN: 'Hungary',
-      ITA: 'Italy',
-      NED: 'Netherlands',
-      POL: 'Poland',
-      POR: 'Portugal',
-      ROU: 'Romania',
-      SCO: 'Scotland',
-      SRB: 'Serbia',
-      SUI: 'Switzerland',
-      SVK: 'Slovakia',
-      SVN: 'Slovenia',
-      TUR: 'Turkey',
-      UKR: 'Ukraine',
-    }
-    let fetchFeedback: { type: string, message: string } | null = null
-    let persistFeedback: { type: string, message: string } | null = null
+    let teams: Team[] = []
+    let teamsLoading = true
+    let teamsFeedback: Feedback | null = null
+    let fetchFeedback: Feedback | null = null
+    let persistFeedback: Feedback | null = null
+
+    onMount(() => {
+        fetchTeams()
+    })
 
     $: if (fetchFeedback) {
         window.setTimeout(() => {
@@ -269,25 +296,34 @@
     </div>
 
     <div class="collapsible-wrapper {teamsExpanded ? '' : 'collapsed'}">
-      <div class="form-section">
-        {#each Object.entries(teams) as [tla, name]}
-        <span class="form-element">
-        <label
-            for="team_{tla}"
-            class="label-help"
-            data-help-type="teams"
-            on:click={toggleHelp}
-        >
-          {name}
-        </label>
-        <input
-            id="team_{tla}"
-            name="team_{tla}"
-            bind:value={formValues.owners[tla]}
-        />
-        </span>
-        {/each}
-      </div>
+      {#if teamsLoading}
+        <small class="team-status">Loading teams...</small>
+      {:else if teamsFeedback !== null}
+        <small class="feedback {teamsFeedback.type}">{teamsFeedback.message}</small>
+        <button type="button" on:click={fetchTeams}>retry</button>
+      {:else if teams.length === 0}
+        <small class="team-status">No teams returned by the API.</small>
+      {:else}
+        <div class="form-section">
+          {#each teams as team (team.tla)}
+          <span class="form-element">
+          <label
+              for="team_{team.tla}"
+              class="label-help"
+              data-help-type="teams"
+              on:click={toggleHelp}
+          >
+            {team.flag} {team.name}
+          </label>
+          <input
+              id="team_{team.tla}"
+              name="team_{team.tla}"
+              bind:value={formValues.owners[team.tla]}
+          />
+          </span>
+          {/each}
+        </div>
+      {/if}
     </div>
 
     <div class="submit-section">
@@ -315,5 +351,11 @@
 
     label.label-help {
         cursor: help;
+    }
+
+    .team-status {
+        display: block;
+        padding: 1em;
+        text-align: left;
     }
 </style>

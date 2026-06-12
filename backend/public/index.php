@@ -3,10 +3,12 @@
 use Plastonick\Euros\ApiError;
 use Plastonick\Euros\ConfigurationService;
 use Plastonick\Euros\Emoji;
+use Plastonick\Euros\FootballData\FootballDataProviderFactory;
 use Plastonick\Euros\Service;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Psr\Log\NullLogger;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -23,18 +25,19 @@ $dbPort = $_ENV['DB_PORT'] ?? null;
 $dbName = $_ENV['DB_NAME'] ?? null;
 $dbUser = $_ENV['DB_USER'] ?? null;
 $dbPass = $_ENV['DB_PASS'] ?? null;
+$competitionId = $_ENV['COMPETITION_ID'] ?? 0;
 
-if (!$dbHost) {
-    return;
+$configurationService = null;
+
+if ($dbHost) {
+    $connection = new \PDO(
+        "pgsql:host={$dbHost};port={$dbPort};dbname={$dbName}",
+        $dbUser,
+        $dbPass
+    );
+
+    $configurationService = new ConfigurationService($connection);
 }
-
-$connection = new \PDO(
-    "pgsql:host={$dbHost};port={$dbPort};dbname={$dbName}",
-    $dbUser,
-    $dbPass
-);
-
-$configurationService = new ConfigurationService($connection);
 
 $app->addBodyParsingMiddleware();
 
@@ -44,7 +47,7 @@ $app->add(function (Request $request, RequestHandler $handler): Response {
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'PUT,GET,DELETE,OPTIONS');
+        ->withHeader('Access-Control-Allow-Methods', 'PUT,GET,POST,DELETE,OPTIONS');
 });
 
 $app->addRoutingMiddleware();
@@ -53,7 +56,40 @@ $app->options('/{routes:.+}', function (Request $request, Response $response): R
     return $response;
 });
 
+$app->get('/teams', function (Request $request, Response $response, array $args) use ($competitionId) {
+    static $teams = null;
+
+    if ($teams === null) {
+        try {
+            $footballData = FootballDataProviderFactory::createFromEnv($_ENV, new NullLogger());
+            $teams = array_map(
+                fn($team) => [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                    'tla' => $team->tla,
+                    'flag' => $team->getFlagEmoji(),
+                ],
+                array_values($footballData->getTeams($competitionId))
+            );
+        } catch (Throwable $e) {
+            $response->getBody()->write((string) new ApiError('Failed to fetch teams'));
+
+            return $response->withStatus(502);
+        }
+
+        usort($teams, fn($a, $b) => $a['name'] <=> $b['name']);
+    }
+
+    $response->getBody()->write(json_encode(['teams' => $teams]));
+    return $response;
+});
+
 $app->get('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
+    if (!$configurationService) {
+        $response->getBody()->write((string) new ApiError('No database configured'));
+        return $response->withStatus(500);
+    }
+
     $url = $request->getQueryParams()['url'] ?? null;
 
     if (!$url) {
@@ -72,6 +108,11 @@ $app->get('/configuration', function (Request $request, Response $response, arra
 
 });
 $app->delete('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
+    if (!$configurationService) {
+        $response->getBody()->write((string) new ApiError('No database configured'));
+        return $response->withStatus(500);
+    }
+
     $url = $request->getQueryParams()['url'] ?? null;
 
     if (!$url) {
@@ -90,6 +131,11 @@ $app->delete('/configuration', function (Request $request, Response $response, a
 
 });
 $app->put('/configuration', function (Request $request, Response $response, array $args) use ($configurationService) {
+    if (!$configurationService) {
+        $response->getBody()->write((string) new ApiError('No database configured'));
+        return $response->withStatus(500);
+    }
+
     $data = json_decode((string) $request->getBody(), true);
     $webhookUrl = trim($data['webhook']);
 
@@ -136,6 +182,11 @@ $app->put('/configuration', function (Request $request, Response $response, arra
     }
 });
 $app->post('/webhook-test', function (Request $request, Response $response, array $args) use ($configurationService) {
+    if (!$configurationService) {
+        $response->getBody()->write((string) new ApiError('No database configured'));
+        return $response->withStatus(500);
+    }
+
     $data = json_decode((string) $request->getBody(), true);
 
     $webhookUrl = trim($data['webhook']);
