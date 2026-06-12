@@ -19,11 +19,6 @@ final class MessageQueue
 
     public function add(Message $message): void
     {
-        $this->logger->debug(
-            'Queueing message',
-            ['message' => $message->content, 'sendAt' => $message->sendAt->format(DATE_ATOM)]
-        );
-
         $this->cache[] = $message;
     }
 
