@@ -2,13 +2,11 @@
 
 namespace Plastonick\Euros;
 
-use Psr\Log\LoggerInterface;
-
 use function array_shift;
 
 final class MessageQueue
 {
-    public function __construct(private readonly LoggerInterface $logger)
+    public function __construct()
     {
     }
 
