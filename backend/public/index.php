@@ -57,28 +57,24 @@ $app->options('/{routes:.+}', function (Request $request, Response $response): R
 });
 
 $app->get('/teams', function (Request $request, Response $response, array $args) use ($competitionId) {
-    static $teams = null;
+    try {
+        $footballData = FootballDataProviderFactory::createFromEnv($_ENV, new NullLogger());
+        $teams = array_map(
+            fn($team) => [
+                'id' => $team->id,
+                'name' => $team->name,
+                'tla' => $team->tla,
+                'flag' => $team->getFlagEmoji(),
+            ],
+            array_values($footballData->getTeams($competitionId))
+        );
+    } catch (Throwable $e) {
+        $response->getBody()->write((string) new ApiError('Failed to fetch teams'));
 
-    if ($teams === null) {
-        try {
-            $footballData = FootballDataProviderFactory::createFromEnv($_ENV, new NullLogger());
-            $teams = array_map(
-                fn($team) => [
-                    'id' => $team->id,
-                    'name' => $team->name,
-                    'tla' => $team->tla,
-                    'flag' => $team->getFlagEmoji(),
-                ],
-                array_values($footballData->getTeams($competitionId))
-            );
-        } catch (Throwable $e) {
-            $response->getBody()->write((string) new ApiError('Failed to fetch teams'));
-
-            return $response->withStatus(502);
-        }
-
-        usort($teams, fn($a, $b) => $a['name'] <=> $b['name']);
+        return $response->withStatus(502);
     }
+
+    usort($teams, fn($a, $b) => $a['name'] <=> $b['name']);
 
     $response->getBody()->write(json_encode(['teams' => $teams]));
     return $response;

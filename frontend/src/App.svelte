@@ -4,7 +4,7 @@
     import axios from 'axios'
     import { onMount } from 'svelte'
 
-    const sweepstakesApi = import.meta.env.VITE_SWEEPSTAKES_API
+    const sweepstakesApi = import.meta.env.VITE_SWEEPSTAKES_API.replace(/\/+$/, '')
     type Team = {
         id: number,
         name: string,
