@@ -10,10 +10,15 @@ final class EspnTeamMapper
     {
         $team = $competitor['team'];
 
+        $abbrev = match ($team['abbreviation']) {
+            'URU' => 'URY',
+            default => $team['abbreviation'],
+        };
+
         return new Team(
             (int) $team['id'],
             $team['displayName'] ?? $team['name'],
-            $team['abbreviation']
+            $abbrev
         );
     }
 
