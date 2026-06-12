@@ -23,7 +23,7 @@ $logger = new Logger('sweepstake_app', [$stdout]);
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
-$competitionId = $_ENV['COMPETITION_ID'];
+$competitionId = $_ENV['COMPETITION_ID'] ?? 0;
 
 $footballData = FootballDataProviderFactory::createFromEnv($_ENV, $logger);
 
